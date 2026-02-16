@@ -51,6 +51,17 @@
     <!-- GAMES & POINTS -->
     <section id="games" class="panel">
       <h2>Partidos y puntos (admin)</h2>
+      <details class="import-games-details">
+        <summary>Importar partidos</summary>
+        <p class="hint">Pega una lista (un partido por línea):</p>
+        <p class="hint">Formato: <strong>Rival</strong> o <strong>Rival, Fecha (YYYY-MM-DD)</strong> o <strong>Rival, Fecha, H</strong> o <strong>A</strong>. Después edita puntos y apuesta extra en cada partido.</p>
+        <textarea id="importGamesText" rows="6" placeholder="Barcelona, 2025-01-15&#10;Atlético, 2025-01-20, A&#10;Girona&#10;..."></textarea>
+        <div class="import-games-actions">
+          <label class="import-venue-default">Por defecto 🏠/✈️: <select id="importGamesVenueDefault"><option value="home">En casa 🏠</option><option value="away">Fuera ✈️</option></select></label>
+          <button type="button" id="importGamesBtn">Importar desde texto</button>
+        </div>
+        <p id="importGamesFeedback" class="import-feedback-inline" aria-live="polite"></p>
+      </details>
       <div class="game-form">
         <label>Rival <input type="text" id="gameOpponent" placeholder="ej. Barcelona" /></label>
         <label>Fecha <input type="date" id="gameDate" /></label>
@@ -165,6 +176,10 @@
           <tbody id="standingsBody"></tbody>
         </table>
         <div class="copy-actions">
+          <label class="copy-option">
+            <input type="checkbox" id="copyIncludeMatchWinners" />
+            Incluir ganadores del último partido por puntos
+          </label>
           <button type="button" id="copyStandingsWhatsApp" class="btn-whatsapp">Copiar para WhatsApp</button>
           <span id="copyStandingsFeedback" class="copy-feedback" aria-live="polite"></span>
         </div>

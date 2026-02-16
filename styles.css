@@ -315,6 +315,110 @@ button:hover {
 }
 
 /* Games & points */
+.import-games-details {
+  margin-bottom: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(44, 82, 130, 0.2);
+}
+
+.import-games-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--header-gold);
+}
+
+.import-games-details .hint {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.import-games-details textarea {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  padding: 0.6rem;
+  margin-bottom: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.95rem;
+}
+
+.import-games-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.import-venue-default select {
+  padding: 0.35rem 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+}
+
+.import-feedback-inline {
+  font-size: 0.9rem;
+  color: var(--green);
+  min-height: 1.5em;
+}
+
+.import-feedback-inline.visible {
+  color: var(--header-gold);
+}
+
+.import-feedback-inline.error {
+  color: #e53e3e;
+}
+
+.import-from-web {
+  margin-bottom: 1rem;
+}
+
+.import-from-web .hint {
+  margin-bottom: 0.5rem;
+}
+
+.import-from-web label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.import-from-web input[type="password"] {
+  max-width: 280px;
+  padding: 0.4rem 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+}
+
+.import-from-web button {
+  margin-right: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.import-divider {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.btn-load-web {
+  background: var(--rm-navy-light);
+  color: var(--rm-gold-bright);
+}
+
 .game-form label {
   display: block;
   margin-bottom: 0.5rem;
@@ -622,10 +726,18 @@ button:hover {
 /* Copy for WhatsApp */
 .copy-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
-  margin-top: 1rem;
-  flex-wrap: wrap;
+}
+
+.copy-actions .copy-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text);
 }
 
 .btn-whatsapp {

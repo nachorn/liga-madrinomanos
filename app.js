@@ -791,6 +791,34 @@ function renderStandings() {
   window.__lastStandingsGames = games;
 }
 
+function getLatestMatchWinnersAsText() {
+  const games = getGames();
+  const results = getResults();
+  const scores = getScores();
+  const participants = getParticipants();
+  const withResult = games.filter((g) => results[g.id]);
+  if (!withResult.length) return '';
+  const sorted = [...withResult].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+  const latest = sorted[0];
+  const gameScores = scores[latest.id];
+  if (!gameScores) return '';
+
+  const byPoints = {};
+  participants.forEach((name, idx) => {
+    const s = gameScores[idx];
+    const pts = s && typeof s.total === 'number' ? s.total : 0;
+    if (!byPoints[pts]) byPoints[pts] = [];
+    byPoints[pts].push(name);
+  });
+
+  const ptsOrder = Object.keys(byPoints).map(Number).sort((a, b) => b - a);
+  const lines = [`🏆 Último partido (${latest.opponent || '?'} ${latest.date || ''}):`];
+  ptsOrder.forEach((pts) => {
+    lines.push(`${pts} pts — ${byPoints[pts].join(', ')}`);
+  });
+  return lines.join('\n');
+}
+
 function getStandingsAsWhatsAppText() {
   const totals = window.__lastStandingsTotals;
   const filter = window.__lastStandingsFilter;
@@ -816,7 +844,12 @@ function getStandingsAsWhatsAppText() {
 }
 
 async function copyStandingsToWhatsApp() {
-  const text = getStandingsAsWhatsAppText();
+  const includeWinners = document.getElementById('copyIncludeMatchWinners')?.checked;
+  const classificationText = getStandingsAsWhatsAppText();
+  const winnersText = includeWinners ? getLatestMatchWinnersAsText() : '';
+  const text = winnersText
+    ? winnersText + '\n\n' + classificationText
+    : classificationText;
   const feedback = document.getElementById('copyStandingsFeedback');
   if (!text) {
     if (feedback) feedback.textContent = 'No hay clasificación para copiar.';
@@ -896,6 +929,91 @@ function addGame() {
   renderReminders();
 }
 
+// --- Import games (bulk) ---
+function parseImportDate(str) {
+  if (!str || typeof str !== 'string') return null;
+  const s = str.trim();
+  if (!s) return null;
+  const dash = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dash) return s;
+  const dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmy) {
+    const [, d, m, y] = dmy;
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }
+  const dm = s.match(/^(\d{1,2})[\/\-](\d{1,2})$/);
+  if (dm) return null;
+  return null;
+}
+
+function importGames() {
+  const raw = document.getElementById('importGamesText')?.value || '';
+  const venueDefault = document.getElementById('importGamesVenueDefault')?.value === 'away' ? 'away' : 'home';
+  const lines = raw.split(/\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length === 0) {
+    const fb = document.getElementById('importGamesFeedback');
+    if (fb) { fb.textContent = 'Escribe al menos una línea (rival por partido).'; fb.classList.add('visible'); }
+    return;
+  }
+
+  const games = getGames();
+  const defaultPts = {
+    fullTime: Number(document.getElementById('ptFullTime')?.value) || 3,
+    halfTime: Number(document.getElementById('ptHalfTime')?.value) || 2,
+    firstScorer: Number(document.getElementById('ptFirstScorer')?.value) || 2,
+    secondScorer: Number(document.getElementById('ptSecondScorer')?.value) || 1,
+    thirdScorer: Number(document.getElementById('ptThirdScorer')?.value) || 1,
+  };
+
+  let nextId = nextGameId();
+  let added = 0;
+  const errors = [];
+
+  lines.forEach((line) => {
+    const parts = line.split(/[,;\t]/).map((p) => p.trim()).filter(Boolean);
+    const opponent = parts[0] || '';
+    if (!opponent) {
+      errors.push(`Línea vacía o sin rival: "${line.slice(0, 30)}..."`);
+      return;
+    }
+    let date = null;
+    let venue = venueDefault;
+    if (parts[1]) {
+      const parsed = parseImportDate(parts[1]);
+      if (parsed) date = parsed;
+      else if (/^[aAhH]$/.test(parts[1])) venue = parts[1].toLowerCase() === 'a' ? 'away' : 'home';
+    }
+    if (parts[2] && /^[aAhH]$/.test(parts[2])) venue = parts[2].toLowerCase() === 'a' ? 'away' : 'home';
+
+    games.push({
+      id: nextId++,
+      opponent,
+      date,
+      venue,
+      points: { ...defaultPts },
+      customBet: undefined,
+    });
+    added++;
+  });
+
+  saveGames(games);
+  document.getElementById('importGamesText').value = '';
+  renderGames();
+  renderPredictionsGameSelect();
+  renderResultsGameSelect();
+  renderStandingsFilter();
+  renderReminders();
+
+  const fb = document.getElementById('importGamesFeedback');
+  if (fb) {
+    let msg = `${added} partido(s) importados. Edita cada uno para cambiar puntos o apuesta extra.`;
+    if (errors.length) msg += ' Errores: ' + errors.slice(0, 3).join('; ');
+    fb.textContent = msg;
+    fb.classList.add('visible');
+    setTimeout(() => { fb.textContent = ''; fb.classList.remove('visible'); }, 5000);
+  }
+}
+
 // --- Save participants ---
 function onSaveParticipants() {
   const text = document.getElementById('participantsList').value;
@@ -932,6 +1050,8 @@ function init() {
 
   document.getElementById('saveParticipants').addEventListener('click', onSaveParticipants);
   document.getElementById('addGame').addEventListener('click', addGame);
+  const importGamesBtn = document.getElementById('importGamesBtn');
+  if (importGamesBtn) importGamesBtn.addEventListener('click', importGames);
   document.getElementById('savePredictions').addEventListener('click', savePredictionsFromTable);
   document.getElementById('saveResult').addEventListener('click', saveResultFromForm);
   const saveHistBtn = document.getElementById('saveHistorical');

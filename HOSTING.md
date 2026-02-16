@@ -95,6 +95,8 @@ git push -u origin main
 6. Netlify te dará una URL (ej. `https://liga-madrinomanos.netlify.app`).  
 7. A partir de ahora, cada **push** a la rama que hayas elegido (p. ej. `main`) hará que Netlify vuelva a desplegar y la web se actualice sola.
 
+**Para "Cargar partidos desde la web":** Si usas **GitHub Pages**: entra en la app → Importar partidos → pega tu API key de [football-data.org](https://www.football-data.org/client/register) (gratis) y pulsa "Guardar key". Si usas **Netlify**: puedes poner la key en **Site configuration → Environment variables** (`FOOTBALL_DATA_API_KEY`) y la función en `netlify/functions/` la usará; así los usuarios no la ven.
+
 ### Resumen
 
 | Dónde está desplegada | Qué hacer para actualizar |
