@@ -49,6 +49,11 @@
           <label>2.º goleador <input type="number" id="ptSecondScorer" min="0" value="1" /></label>
           <label>3.º goleador <input type="number" id="ptThirdScorer" min="0" value="1" /></label>
         </fieldset>
+        <fieldset class="points-set custom-bet-set">
+          <legend>Apuesta extra (opcional)</legend>
+          <label>Nombre de la apuesta <input type="text" id="ptCustomBetLabel" placeholder="ej. Primera asistencia" /></label>
+          <label>Puntos si acierta <input type="number" id="ptCustomBetPoints" min="0" value="2" /></label>
+        </fieldset>
         <button type="button" id="addGame">Añadir partido</button>
       </div>
       <div class="games-list-wrap">
@@ -67,7 +72,7 @@
         <p class="hint">Rellena los pronósticos de cada uno. El Madrid es siempre el primer resultado (casa).</p>
         <table id="predictionsTable" class="data-table">
           <thead>
-            <tr>
+            <tr id="predictionsHeaderRow">
               <th>Participante</th>
               <th>Final (RM – Rival)</th>
               <th>Descanso (RM – Rival)</th>
@@ -96,6 +101,9 @@
           <label>1.º goleador <select id="resScorer1"></select><input type="text" id="resScorer1Other" class="scorer-other-inline" placeholder="Nombre" /></label>
           <label>2.º goleador <select id="resScorer2"></select><input type="text" id="resScorer2Other" class="scorer-other-inline" placeholder="Nombre" /></label>
           <label>3.º goleador <select id="resScorer3"></select><input type="text" id="resScorer3Other" class="scorer-other-inline" placeholder="Nombre" /></label>
+          <div id="resultCustomBetWrap" class="result-custom-bet" style="display: none;">
+            <label><span id="resultCustomBetLabel"></span> <input type="text" id="resCustomBetValue" placeholder="Resultado real" /></label>
+          </div>
         </fieldset>
         <button type="button" id="saveResult">Guardar resultado y calcular puntos</button>
       </div>

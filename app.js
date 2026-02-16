@@ -161,6 +161,12 @@ function computeGameScores(gameId, game, result, predictionsForGame) {
       total += s3;
     }
 
+    if (game.customBet && game.customBet.label && result.customBetValue != null && result.customBetValue !== '') {
+      const predVal = String(pred.customBetValue || '').trim().toLowerCase();
+      const resVal = String(result.customBetValue || '').trim().toLowerCase();
+      if (predVal && predVal === resVal) total += (game.customBet.points || 0);
+    }
+
     scores[participantIndex] = { total, ft, ht, s1, s2, s3 };
   }
 
@@ -213,12 +219,13 @@ function renderGames() {
     const pts = g.points || {};
     const div = document.createElement('div');
     div.className = 'game-card' + (res ? ' has-result' : '');
+    const customSummary = g.customBet && g.customBet.label ? ` | Extra: ${escapeHtml(g.customBet.label)} (${g.customBet.points ?? 0})` : '';
     div.innerHTML = `
       <div>
         <span class="opponent">${escapeHtml(g.opponent || 'Unknown')}</span>
         <span class="date">${g.date || ''}</span>
       </div>
-      <span class="points-summary">Final:${pts.fullTime ?? 0} Desc:${pts.halfTime ?? 0} 1.º:${pts.firstScorer ?? 0} 2.º:${pts.secondScorer ?? 0} 3.º:${pts.thirdScorer ?? 0}</span>
+      <span class="points-summary">Final:${pts.fullTime ?? 0} Desc:${pts.halfTime ?? 0} 1.º:${pts.firstScorer ?? 0} 2.º:${pts.secondScorer ?? 0} 3.º:${pts.thirdScorer ?? 0}${customSummary}</span>
       <button type="button" data-delete-game="${g.id}">Borrar</button>
     `;
     div.querySelector('[data-delete-game]').addEventListener('click', () => {
@@ -267,16 +274,31 @@ function renderPredictionsGameSelect() {
 
 function fillPredictionsTable() {
   const gameId = document.getElementById('predictionsGame').value;
+  const games = getGames();
+  const game = gameId ? games.find((g) => String(g.id) === String(gameId)) : null;
+  const hasCustomBet = game && game.customBet && game.customBet.label;
   const participants = getParticipants();
   const predictions = getPredictions();
   const gamePreds = gameId ? predictions[gameId] || {} : {};
+  const headerRow = document.getElementById('predictionsHeaderRow');
   const tbody = document.getElementById('predictionsBody');
   tbody.innerHTML = '';
+
+  let headerHtml = `
+    <th>Participante</th>
+    <th>Final (RM – Rival)</th>
+    <th>Descanso (RM – Rival)</th>
+    <th>1.º goleador</th>
+    <th>2.º goleador</th>
+    <th>3.º goleador</th>
+  `;
+  if (hasCustomBet) headerHtml += `<th>${escapeHtml(game.customBet.label)}</th>`;
+  if (headerRow) headerRow.innerHTML = headerHtml;
 
   participants.forEach((name, idx) => {
     const p = gamePreds[idx] || {};
     const tr = document.createElement('tr');
-    tr.innerHTML = `
+    let rowHtml = `
       <td>${escapeHtml(name)}</td>
       <td><div class="score-inputs"><input type="number" data-ft-home min="0" value="${p.ftHome ?? ''}" placeholder="RM" /><span>–</span><input type="number" data-ft-away min="0" value="${p.ftAway ?? ''}" placeholder="Rival" /></div></td>
       <td><div class="score-inputs"><input type="number" data-ht-home min="0" value="${p.htHome ?? ''}" /><span>–</span><input type="number" data-ht-away min="0" value="${p.htAway ?? ''}" /></div></td>
@@ -284,6 +306,8 @@ function fillPredictionsTable() {
       <td><span class="scorer-cell"><select data-scorer2>${buildScorerSelectOptions(p.scorer2)}</select><input type="text" class="scorer-other-input" data-scorer-other="2" placeholder="Nombre" /></span></td>
       <td><span class="scorer-cell"><select data-scorer3>${buildScorerSelectOptions(p.scorer3)}</select><input type="text" class="scorer-other-input" data-scorer-other="3" placeholder="Nombre" /></span></td>
     `;
+    if (hasCustomBet) rowHtml += `<td><input type="text" data-custom-bet value="${escapeHtml(p.customBetValue || '')}" placeholder="Pronóstico" /></td>`;
+    tr.innerHTML = rowHtml;
     tr.dataset.participantIndex = idx;
     [1, 2, 3].forEach((n) => {
       const sel = tr.querySelector(`select[data-scorer${n}]`);
@@ -311,6 +335,9 @@ function savePredictionsFromTable() {
     alert('Elige un partido primero.');
     return;
   }
+  const games = getGames();
+  const game = games.find((g) => String(g.id) === String(gameId));
+  const hasCustomBet = game && game.customBet && game.customBet.label;
   const predictions = getPredictions();
   predictions[gameId] = {};
   document.querySelectorAll('#predictionsBody tr').forEach((tr) => {
@@ -324,6 +351,8 @@ function savePredictionsFromTable() {
       const v = sel.value === SCORER_OTHER ? (inp && inp.value ? inp.value.trim() : '') : (sel.value || '').trim();
       return v || undefined;
     }
+    const customInp = tr.querySelector('input[data-custom-bet]');
+    const customBetValue = hasCustomBet && customInp ? (customInp.value || '').trim() || undefined : undefined;
     predictions[gameId][idx] = {
       ftHome: ftHome.value.trim() === '' ? undefined : Number(ftHome.value),
       ftAway: ftAway.value.trim() === '' ? undefined : Number(ftAway.value),
@@ -332,6 +361,7 @@ function savePredictionsFromTable() {
       scorer1: getScorerValue(1),
       scorer2: getScorerValue(2),
       scorer3: getScorerValue(3),
+      customBetValue,
     };
   });
   savePredictions(predictions);
@@ -373,6 +403,8 @@ function initResultScorerSelects() {
 
 function fillResultForm() {
   const gameId = document.getElementById('resultsGame').value;
+  const games = getGames();
+  const game = gameId ? games.find((g) => String(g.id) === String(gameId)) : null;
   const results = getResults();
   const r = gameId ? results[gameId] || {} : {};
   document.getElementById('resFtHome').value = r.ftHome ?? '';
@@ -391,6 +423,17 @@ function fillResultForm() {
       if (otherInp) { otherInp.value = ''; otherInp.style.display = 'none'; }
     }
   });
+  const customWrap = document.getElementById('resultCustomBetWrap');
+  const customLabel = document.getElementById('resultCustomBetLabel');
+  const customValue = document.getElementById('resCustomBetValue');
+  if (game && game.customBet && game.customBet.label) {
+    if (customWrap) customWrap.style.display = 'block';
+    if (customLabel) customLabel.textContent = game.customBet.label + ' ';
+    if (customValue) customValue.value = r.customBetValue ?? '';
+  } else {
+    if (customWrap) customWrap.style.display = 'none';
+    if (customValue) customValue.value = '';
+  }
 }
 
 function saveResultFromForm() {
@@ -399,12 +442,16 @@ function saveResultFromForm() {
     alert('Elige un partido primero.');
     return;
   }
+  const games = getGames();
+  const game = games.find((g) => String(g.id) === String(gameId));
   const results = getResults();
   function getResultScorer(n) {
     const sel = document.getElementById(`resScorer${n}`);
     const otherInp = document.getElementById(`resScorer${n}Other`);
     return sel.value === SCORER_OTHER ? (otherInp ? otherInp.value.trim() : '') : (sel.value || '').trim();
   }
+  const customValueEl = document.getElementById('resCustomBetValue');
+  const customBetValue = (game && game.customBet && customValueEl) ? customValueEl.value.trim() : '';
   results[gameId] = {
     ftHome: Number(document.getElementById('resFtHome').value) || 0,
     ftAway: Number(document.getElementById('resFtAway').value) || 0,
@@ -413,6 +460,7 @@ function saveResultFromForm() {
     scorer1: getResultScorer(1),
     scorer2: getResultScorer(2),
     scorer3: getResultScorer(3),
+    customBetValue: customBetValue || undefined,
   };
   saveResults(results);
   recalcAllScores();
@@ -591,15 +639,22 @@ function addGame() {
     secondScorer: Number(document.getElementById('ptSecondScorer').value) || 0,
     thirdScorer: Number(document.getElementById('ptThirdScorer').value) || 0,
   };
+  const customLabel = (document.getElementById('ptCustomBetLabel') && document.getElementById('ptCustomBetLabel').value || '').trim();
+  const customBet = customLabel
+    ? { label: customLabel, points: Number(document.getElementById('ptCustomBetPoints').value) || 0 }
+    : undefined;
   games.push({
     id: nextGameId(),
     opponent,
     date: date || null,
     points: pts,
+    customBet,
   });
   saveGames(games);
   document.getElementById('gameOpponent').value = '';
   document.getElementById('gameDate').value = '';
+  if (document.getElementById('ptCustomBetLabel')) document.getElementById('ptCustomBetLabel').value = '';
+  if (document.getElementById('ptCustomBetPoints')) document.getElementById('ptCustomBetPoints').value = '2';
   renderGames();
   renderPredictionsGameSelect();
   renderResultsGameSelect();

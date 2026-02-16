@@ -206,6 +206,21 @@ button:hover {
   margin-left: 0.5rem;
 }
 
+.game-form .custom-bet-set input[type="text"] {
+  width: 200px;
+}
+
+.result-custom-bet {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border);
+}
+
+.result-custom-bet input[type="text"] {
+  margin-left: 0.5rem;
+  min-width: 140px;
+}
+
 .games-list {
   display: flex;
   flex-direction: column;
