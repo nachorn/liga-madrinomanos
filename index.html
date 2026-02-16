@@ -21,6 +21,7 @@
     <button type="button" class="tab" data-tab="games">Partidos y puntos</button>
     <button type="button" class="tab" data-tab="predictions">Pronósticos</button>
     <button type="button" class="tab" data-tab="results">Poner resultado</button>
+    <button type="button" class="tab" data-tab="historical">Histórico</button>
     <button type="button" class="tab" data-tab="standings">Clasificación</button>
   </nav>
 
@@ -100,6 +101,24 @@
       </div>
     </section>
 
+    <!-- HISTORICAL POINTS -->
+    <section id="historical" class="panel">
+      <h2>Puntos históricos</h2>
+      <p class="hint">Puntos que ya tenían antes de usar esta app. Se suman a los de los partidos en la clasificación.</p>
+      <div id="historicalTableWrap" class="table-wrap">
+        <table id="historicalTable" class="data-table">
+          <thead>
+            <tr>
+              <th>Participante</th>
+              <th>Puntos históricos</th>
+            </tr>
+          </thead>
+          <tbody id="historicalBody"></tbody>
+        </table>
+        <button type="button" id="saveHistorical">Guardar puntos históricos</button>
+      </div>
+    </section>
+
     <!-- STANDINGS -->
     <section id="standings" class="panel">
       <h2>Clasificación</h2>
@@ -115,11 +134,6 @@
               <th>#</th>
               <th>Participante</th>
               <th>Pts</th>
-              <th>Final</th>
-              <th>Desc.</th>
-              <th>1.º</th>
-              <th>2.º</th>
-              <th>3.º</th>
             </tr>
           </thead>
           <tbody id="standingsBody"></tbody>

@@ -37,7 +37,8 @@ const STORAGE_KEYS = {
   games: 'rm_games',
   predictions: 'rm_predictions',
   results: 'rm_results',
-  scores: 'rm_scores', // computed per game per user
+  scores: 'rm_scores',
+  historicalPoints: 'rm_historical_points', // { "participantName": number }
 };
 
 // --- Data helpers ---
@@ -93,6 +94,16 @@ function getScores() {
 
 function saveScores(scores) {
   localStorage.setItem(STORAGE_KEYS.scores, JSON.stringify(scores));
+}
+
+function getHistoricalPoints() {
+  const raw = localStorage.getItem(STORAGE_KEYS.historicalPoints);
+  if (!raw) return {};
+  return JSON.parse(raw);
+}
+
+function saveHistoricalPoints(obj) {
+  localStorage.setItem(STORAGE_KEYS.historicalPoints, JSON.stringify(obj));
 }
 
 // --- Scoring ---
@@ -409,6 +420,42 @@ function saveResultFromForm() {
   alert('Resultado guardado. Puntos recalculados.');
 }
 
+// --- UI: Historical points ---
+function renderHistoricalPanel() {
+  const participants = getParticipants();
+  const historical = getHistoricalPoints();
+  const tbody = document.getElementById('historicalBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  participants.forEach((name, idx) => {
+    const tr = document.createElement('tr');
+    const val = historical[name];
+    tr.dataset.participantIndex = idx;
+    tr.innerHTML = `
+      <td>${escapeHtml(name)}</td>
+      <td><input type="number" min="0" value="${val !== undefined && val !== null ? Number(val) : ''}" placeholder="0" /></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function saveHistoricalFromPanel() {
+  const participants = getParticipants();
+  const historical = getHistoricalPoints();
+  document.querySelectorAll('#historicalBody tr').forEach((tr) => {
+    const idx = tr.dataset.participantIndex;
+    const name = participants[Number(idx)];
+    const input = tr.querySelector('input[type="number"]');
+    if (name != null && input) {
+      const v = input.value.trim();
+      historical[name] = v === '' ? 0 : Number(v);
+    }
+  });
+  saveHistoricalPoints(historical);
+  renderStandings();
+  alert('Puntos históricos guardados.');
+}
+
 // --- UI: Standings ---
 function renderStandingsFilter() {
   const games = getGames();
@@ -431,25 +478,20 @@ function renderStandings() {
   const participants = getParticipants();
   const scores = getScores();
   const games = getGames();
+  const historical = getHistoricalPoints();
 
   const gameIds = filter === 'all' ? games.map((g) => g.id) : [filter];
 
   const totals = participants.map((_, idx) => {
-    let total = 0;
-    let ft = 0, ht = 0, s1 = 0, s2 = 0, s3 = 0;
+    let gamePoints = 0;
     gameIds.forEach((gid) => {
       const gameScores = scores[gid];
-      if (gameScores && gameScores[idx]) {
-        const s = gameScores[idx];
-        total += s.total;
-        ft += s.ft;
-        ht += s.ht;
-        s1 += s.s1;
-        s2 += s.s2;
-        s3 += s.s3;
-      }
+      if (gameScores && gameScores[idx]) gamePoints += gameScores[idx].total;
     });
-    return { idx, name: participants[idx], total, ft, ht, s1, s2, s3 };
+    const name = participants[idx];
+    const hist = Number(historical[name]) || 0;
+    const total = hist + gamePoints;
+    return { idx, name, total, gamePoints, historical: hist };
   });
 
   totals.sort((a, b) => b.total - a.total);
@@ -462,16 +504,10 @@ function renderStandings() {
       <td>${rank + 1}</td>
       <td>${escapeHtml(t.name)}</td>
       <td>${t.total}</td>
-      <td>${t.ft}</td>
-      <td>${t.ht}</td>
-      <td>${t.s1}</td>
-      <td>${t.s2}</td>
-      <td>${t.s3}</td>
     `;
     tbody.appendChild(tr);
   });
 
-  // Store current standings data for WhatsApp copy (used by copyStandingsToWhatsApp)
   window.__lastStandingsTotals = totals;
   window.__lastStandingsFilter = filter;
   window.__lastStandingsGames = games;
@@ -484,10 +520,10 @@ function getStandingsAsWhatsAppText() {
   if (!totals || !totals.length) return '';
 
   const filterLabel = filter === 'all'
-    ? 'All games'
-    : (games || []).find((g) => String(g.id) === String(filter))?.opponent || 'Standings';
+    ? 'Todos los partidos'
+    : (games || []).find((g) => String(g.id) === String(filter))?.opponent || 'Clasificación';
   const lines = [
-    '⚽ Real Madrid Prediction League',
+    '⚽ Liga Madrinomanos',
     `📊 ${filterLabel}`,
     '',
   ];
@@ -495,7 +531,7 @@ function getStandingsAsWhatsAppText() {
   totals.forEach((t, i) => {
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '  ';
     const rank = (i + 1).toString().padStart(2);
-    lines.push(`${medal} ${rank}. ${t.name} — ${t.total} pts (FT:${t.ft} HT:${t.ht} 1st:${t.s1} 2nd:${t.s2} 3rd:${t.s3})`);
+    lines.push(`${medal} ${rank}. ${t.name} — ${t.total} pts`);
   });
 
   return lines.join('\n');
@@ -534,6 +570,7 @@ function initTabs() {
       document.getElementById(id).classList.add('active');
       if (id === 'standings') renderStandings();
       if (id === 'predictions') fillPredictionsTable();
+      if (id === 'historical') renderHistoricalPanel();
     });
   });
 }
@@ -588,6 +625,7 @@ function init() {
   renderPredictionsGameSelect();
   renderResultsGameSelect();
   renderStandingsFilter();
+  renderHistoricalPanel();
   renderStandings();
   initTabs();
 
@@ -595,6 +633,8 @@ function init() {
   document.getElementById('addGame').addEventListener('click', addGame);
   document.getElementById('savePredictions').addEventListener('click', savePredictionsFromTable);
   document.getElementById('saveResult').addEventListener('click', saveResultFromForm);
+  const saveHistBtn = document.getElementById('saveHistorical');
+  if (saveHistBtn) saveHistBtn.addEventListener('click', saveHistoricalFromPanel);
   const copyBtn = document.getElementById('copyStandingsWhatsApp');
   if (copyBtn) copyBtn.addEventListener('click', copyStandingsToWhatsApp);
 }
