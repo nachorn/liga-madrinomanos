@@ -21,6 +21,27 @@
   --header-gold: #f4d03f;
 }
 
+/* Tema claro */
+body[data-theme="light"] {
+  --bg: #f0f4f8;
+  --surface: #e2e8f0;
+  --card: #ffffff;
+  --border: #cbd5e0;
+  --text: #1a202c;
+  --text-muted: #4a5568;
+  --green: #38a169;
+}
+
+body[data-theme="light"] {
+  background: var(--bg);
+  color: var(--text);
+  background-image: linear-gradient(180deg, var(--bg) 0%, var(--surface) 50%, var(--bg) 100%);
+}
+
+body[data-theme="light"] .data-table tbody tr:hover {
+  background: rgba(201, 162, 39, 0.08);
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -50,6 +71,34 @@ body {
   padding-top: calc(1.25rem + env(safe-area-inset-top));
   border-bottom: 3px solid var(--rm-gold);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.theme-toggle {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--rm-gold);
+  border-radius: 50%;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 .header h1 {
@@ -121,6 +170,44 @@ body {
   padding: 1.5rem;
   padding-left: calc(1.5rem + env(safe-area-inset-left));
   padding-right: calc(1.5rem + env(safe-area-inset-right));
+}
+
+.reminders-wrap {
+  margin-bottom: 1rem;
+}
+
+.reminders-box {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+}
+
+.reminders-box .reminders-title {
+  font-weight: 600;
+  color: var(--header-gold);
+  margin-bottom: 0.35rem;
+}
+
+.reminders-box p {
+  margin: 0 0 0.5rem;
+}
+
+.reminders-box p:last-of-type {
+  margin-bottom: 0.75rem;
+}
+
+.reminders-box .reminder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.reminders-box .reminder-actions button {
+  margin-top: 0;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
 }
 
 .panel {

@@ -14,8 +14,13 @@
 </head>
 <body>
   <header class="header">
-    <h1><span class="logo">⚽</span> Liga Madrinomanos</h1>
-    <p class="subtitle">Resultado final • Descanso • 1.º / 2.º / 3.º goleador</p>
+    <div class="header-inner">
+      <div>
+        <h1><span class="logo">⚽</span> Liga Madrinomanos</h1>
+        <p class="subtitle">Resultado final • Descanso • 1.º / 2.º / 3.º goleador</p>
+      </div>
+      <button type="button" id="themeToggle" class="theme-toggle" aria-label="Cambiar tema (claro/oscuro)" title="Tema claro / oscuro">🌙</button>
+    </div>
   </header>
 
   <nav class="tabs">
@@ -29,6 +34,7 @@
   </nav>
 
   <main class="main">
+    <div id="remindersWrap" class="reminders-wrap" aria-live="polite"></div>
     <!-- PARTICIPANTS -->
     <section id="participants" class="panel active">
       <h2>Participantes (~30)</h2>

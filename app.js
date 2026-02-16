@@ -38,8 +38,101 @@ const STORAGE_KEYS = {
   predictions: 'rm_predictions',
   results: 'rm_results',
   scores: 'rm_scores',
-  historicalPoints: 'rm_historical_points', // { "participantName": number }
+  historicalPoints: 'rm_historical_points',
 };
+const THEME_KEY = 'rm_theme';
+
+// --- Theme ---
+function getTheme() {
+  return localStorage.getItem(THEME_KEY) || 'dark';
+}
+
+function setTheme(theme) {
+  localStorage.setItem(THEME_KEY, theme);
+  document.body.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if (btn) btn.textContent = theme === 'light' ? '🌙' : '☀️';
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', theme === 'light' ? '#c9a227' : '#c9a227');
+}
+
+function toggleTheme() {
+  setTheme(getTheme() === 'light' ? 'dark' : 'light');
+}
+
+// --- Recordatorios ---
+function getReminders() {
+  const games = getGames();
+  const results = getResults();
+  const predictions = getPredictions();
+  const noResult = games.filter((g) => !results[g.id]);
+  const noPredictions = games.filter((g) => {
+    const pred = predictions[g.id];
+    if (!pred || typeof pred !== 'object') return true;
+    const keys = Object.keys(pred);
+    if (keys.length === 0) return true;
+    const hasAny = keys.some((idx) => {
+      const p = pred[idx];
+      return p && (p.ftHome != null || p.ftAway != null || p.scorer1 != null);
+    });
+    return !hasAny;
+  });
+  return { noResult, noPredictions };
+}
+
+function goToTab(tabId) {
+  document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach((p) => p.classList.remove('active'));
+  const tab = document.querySelector(`.tab[data-tab="${tabId}"]`);
+  const panel = document.getElementById(tabId);
+  if (tab) tab.classList.add('active');
+  if (panel) panel.classList.add('active');
+  if (tabId === 'standings') renderStandings();
+  if (tabId === 'predictions') fillPredictionsTable();
+  if (tabId === 'historical') renderHistoricalPanel();
+  if (tabId === 'results') fillResultForm();
+}
+
+function renderReminders() {
+  const wrap = document.getElementById('remindersWrap');
+  if (!wrap) return;
+  const { noResult, noPredictions } = getReminders();
+  if (noResult.length === 0 && noPredictions.length === 0) {
+    wrap.innerHTML = '';
+    return;
+  }
+  const sortedNoRes = [...noResult].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const sortedNoPred = [...noPredictions].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const listNoRes = sortedNoRes.map((g) => `${g.opponent || '?'} (${g.date || '—'})`).join(', ');
+  const listNoPred = sortedNoPred.map((g) => `${g.opponent || '?'} (${g.date || '—'})`).join(', ');
+  let html = '<div class="reminders-box"><span class="reminders-title">📌 Recordatorios</span>';
+  if (noResult.length) {
+    html += `<p>Partido(s) sin resultado: ${escapeHtml(listNoRes)}</p>`;
+    html += '<div class="reminder-actions"><button type="button" data-goto="results">Ir a Poner resultado</button></div>';
+  }
+  if (noPredictions.length) {
+    if (noResult.length) html += '<p style="margin-top:0.75rem;"></p>';
+    html += `<p>Falta introducir pronósticos: ${escapeHtml(listNoPred)}</p>`;
+    html += '<div class="reminder-actions"><button type="button" data-goto="predictions">Ir a Pronósticos</button></div>';
+  }
+  html += '</div>';
+  wrap.innerHTML = html;
+  wrap.querySelectorAll('[data-goto]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tabId = btn.dataset.goto;
+      goToTab(tabId);
+      if (tabId === 'results' && sortedNoRes[0]) {
+        const sel = document.getElementById('resultsGame');
+        if (sel) sel.value = sortedNoRes[0].id;
+        fillResultForm();
+      }
+      if (tabId === 'predictions' && sortedNoPred[0]) {
+        const sel = document.getElementById('predictionsGame');
+        if (sel) sel.value = sortedNoPred[0].id;
+        fillPredictionsTable();
+      }
+    });
+  });
+}
 
 // --- Data helpers ---
 function getParticipants() {
@@ -249,6 +342,7 @@ function renderGames() {
         renderPredictionsGameSelect();
         renderResultsGameSelect();
         renderStandingsFilter();
+        renderReminders();
       }
     });
     container.appendChild(div);
@@ -312,6 +406,7 @@ function saveEditGame() {
   renderStandingsFilter();
   fillPredictionsTable();
   fillResultForm();
+  renderReminders();
   alert('Partido actualizado.');
 }
 
@@ -476,6 +571,7 @@ function savePredictionsFromTable() {
   });
   savePredictions(predictions);
   recalcAllScores();
+  renderReminders();
   alert('Pronósticos guardados.');
 }
 
@@ -575,6 +671,7 @@ function saveResultFromForm() {
   saveResults(results);
   recalcAllScores();
   fillResultForm();
+  renderReminders();
   alert('Resultado guardado. Puntos recalculados.');
 }
 
@@ -769,6 +866,7 @@ function addGame() {
   renderPredictionsGameSelect();
   renderResultsGameSelect();
   renderStandingsFilter();
+  renderReminders();
 }
 
 // --- Save participants ---
@@ -784,6 +882,14 @@ function onSaveParticipants() {
 
 // --- Init ---
 function init() {
+  const theme = getTheme();
+  document.body.setAttribute('data-theme', theme);
+  const themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.textContent = theme === 'light' ? '🌙' : '☀️';
+    themeBtn.addEventListener('click', toggleTheme);
+  }
+
   initResultScorerSelects();
   renderParticipants();
   renderGames();
@@ -792,6 +898,7 @@ function init() {
   renderStandingsFilter();
   renderHistoricalPanel();
   renderStandings();
+  renderReminders();
   initTabs();
 
   document.getElementById('saveParticipants').addEventListener('click', onSaveParticipants);
