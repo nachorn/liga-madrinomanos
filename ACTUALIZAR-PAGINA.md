@@ -4,6 +4,12 @@ Sigue estos pasos en orden:
 
 ---
 
+## Si abres la app desde el icono en el iPhone (PWA)
+
+En la **cabecera de la app** (arriba a la derecha) hay un botón **🔄**. Pulsa ese botón para **actualizar** y cargar la última versión. Así puedes refrescar aunque no tengas la barra del navegador.
+
+---
+
 ## 1. Forzar recarga en el navegador (lo más habitual)
 
 El navegador suele guardar la versión antigua en caché.

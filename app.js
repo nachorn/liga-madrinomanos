@@ -889,6 +889,8 @@ function init() {
     themeBtn.textContent = theme === 'light' ? '🌙' : '☀️';
     themeBtn.addEventListener('click', toggleTheme);
   }
+  const refreshBtn = document.getElementById('refreshApp');
+  if (refreshBtn) refreshBtn.addEventListener('click', () => { location.reload(); });
 
   initResultScorerSelects();
   renderParticipants();

@@ -80,8 +80,15 @@ body {
   gap: 1rem;
 }
 
-.theme-toggle {
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   flex-shrink: 0;
+}
+
+.header-icon-btn,
+.theme-toggle {
   width: 44px;
   height: 44px;
   padding: 0;
@@ -89,16 +96,23 @@ body {
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid var(--rm-gold);
   border-radius: 50%;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
+.header-icon-btn:hover,
 .theme-toggle:hover {
   background: rgba(255, 255, 255, 0.25);
+}
+
+.theme-toggle {
+  font-size: 1.4rem;
 }
 
 .header h1 {
