@@ -312,10 +312,14 @@ function renderGames() {
     const pts = g.points || {};
     const div = document.createElement('div');
     div.className = 'game-card' + (res ? ' has-result' : '');
+    const isAway = g.venue === 'away';
+    const fixture = isAway ? `${escapeHtml(g.opponent || '?')} – Real Madrid` : `Real Madrid – ${escapeHtml(g.opponent || 'Unknown')}`;
+    const ha = isAway ? '✈️' : '🏠';
     const customSummary = g.customBet && g.customBet.label ? ` | Extra: ${escapeHtml(g.customBet.label)} (${g.customBet.points ?? 0})` : '';
     div.innerHTML = `
       <div>
-        <span class="opponent">${escapeHtml(g.opponent || 'Unknown')}</span>
+        <span class="opponent">${fixture}</span>
+        <span class="venue-badge">${ha}</span>
         <span class="date">${g.date || ''}</span>
       </div>
       <span class="points-summary">Final:${pts.fullTime ?? 0} Desc:${pts.halfTime ?? 0} 1.º:${pts.firstScorer ?? 0} 2.º:${pts.secondScorer ?? 0} 3.º:${pts.thirdScorer ?? 0}${customSummary}</span>
@@ -360,6 +364,9 @@ function openEditGameModal(game) {
   document.getElementById('editGameId').value = game.id;
   document.getElementById('editGameOpponent').value = game.opponent || '';
   document.getElementById('editGameDate').value = game.date || '';
+  const venue = game.venue === 'away' ? 'away' : 'home';
+  if (document.getElementById('editGameVenueHome')) document.getElementById('editGameVenueHome').checked = (venue === 'home');
+  if (document.getElementById('editGameVenueAway')) document.getElementById('editGameVenueAway').checked = (venue === 'away');
   const pts = game.points || {};
   document.getElementById('editPtFullTime').value = pts.fullTime ?? 3;
   document.getElementById('editPtHalfTime').value = pts.halfTime ?? 2;
@@ -386,6 +393,8 @@ function saveEditGame() {
   if (!game) return;
   game.opponent = document.getElementById('editGameOpponent').value.trim() || game.opponent;
   game.date = document.getElementById('editGameDate').value || null;
+  const editVenueEl = document.querySelector('input[name="editGameVenue"]:checked');
+  game.venue = (editVenueEl && editVenueEl.value === 'away') ? 'away' : 'home';
   game.points = {
     fullTime: Number(document.getElementById('editPtFullTime').value) || 0,
     halfTime: Number(document.getElementById('editPtHalfTime').value) || 0,
@@ -471,7 +480,8 @@ function renderPredictionsGameSelect() {
   sorted.forEach((g) => {
     const opt = document.createElement('option');
     opt.value = g.id;
-    opt.textContent = `${g.opponent || '?'} (${g.date || '?'})`;
+    const ha = g.venue === 'away' ? ' ✈️' : ' 🏠';
+    opt.textContent = `${g.opponent || '?'}${ha} (${g.date || '?'})`;
     sel.appendChild(opt);
   });
   sel.addEventListener('change', fillPredictionsTable);
@@ -489,10 +499,15 @@ function fillPredictionsTable() {
   const tbody = document.getElementById('predictionsBody');
   tbody.innerHTML = '';
 
+  const isAway = game && game.venue === 'away';
+  const scoreLabel = isAway ? 'Rival – RM' : 'RM – Rival';
+  const firstPh = isAway ? 'Rival' : 'RM';
+  const secondPh = isAway ? 'RM' : 'Rival';
+
   let headerHtml = `
     <th>Participante</th>
-    <th>Final (RM – Rival)</th>
-    <th>Descanso (RM – Rival)</th>
+    <th>Final (${scoreLabel})</th>
+    <th>Descanso (${scoreLabel})</th>
     <th>1.º goleador</th>
     <th>2.º goleador</th>
     <th>3.º goleador</th>
@@ -505,8 +520,8 @@ function fillPredictionsTable() {
     const tr = document.createElement('tr');
     let rowHtml = `
       <td>${escapeHtml(name)}</td>
-      <td><div class="score-inputs"><input type="number" data-ft-home min="0" value="${p.ftHome ?? ''}" placeholder="RM" /><span>–</span><input type="number" data-ft-away min="0" value="${p.ftAway ?? ''}" placeholder="Rival" /></div></td>
-      <td><div class="score-inputs"><input type="number" data-ht-home min="0" value="${p.htHome ?? ''}" /><span>–</span><input type="number" data-ht-away min="0" value="${p.htAway ?? ''}" /></div></td>
+      <td><div class="score-inputs"><input type="number" data-ft-home min="0" value="${p.ftHome ?? ''}" placeholder="${firstPh}" /><span>–</span><input type="number" data-ft-away min="0" value="${p.ftAway ?? ''}" placeholder="${secondPh}" /></div></td>
+      <td><div class="score-inputs"><input type="number" data-ht-home min="0" value="${p.htHome ?? ''}" placeholder="${firstPh}" /><span>–</span><input type="number" data-ht-away min="0" value="${p.htAway ?? ''}" placeholder="${secondPh}" /></div></td>
       <td><span class="scorer-cell"><select data-scorer1>${buildScorerSelectOptions(p.scorer1)}</select><input type="text" class="scorer-other-input" data-scorer-other="1" placeholder="Nombre" /></span></td>
       <td><span class="scorer-cell"><select data-scorer2>${buildScorerSelectOptions(p.scorer2)}</select><input type="text" class="scorer-other-input" data-scorer-other="2" placeholder="Nombre" /></span></td>
       <td><span class="scorer-cell"><select data-scorer3>${buildScorerSelectOptions(p.scorer3)}</select><input type="text" class="scorer-other-input" data-scorer-other="3" placeholder="Nombre" /></span></td>
@@ -584,7 +599,8 @@ function renderResultsGameSelect() {
   sorted.forEach((g) => {
     const opt = document.createElement('option');
     opt.value = g.id;
-    opt.textContent = `${g.opponent || '?'} (${g.date || '?'})`;
+    const ha = g.venue === 'away' ? ' ✈️' : ' 🏠';
+    opt.textContent = `${g.opponent || '?'}${ha} (${g.date || '?'})`;
     sel.appendChild(opt);
   });
   sel.addEventListener('change', fillResultForm);
@@ -613,6 +629,12 @@ function fillResultForm() {
   const game = gameId ? games.find((g) => String(g.id) === String(gameId)) : null;
   const results = getResults();
   const r = gameId ? results[gameId] || {} : {};
+  const isAway = game && game.venue === 'away';
+  const scoreLabel = isAway ? 'Rival – RM' : 'RM – Rival';
+  const ftLabel = document.getElementById('resFtLabel');
+  const htLabel = document.getElementById('resHtLabel');
+  if (ftLabel) ftLabel.textContent = `Resultado final (${scoreLabel}) `;
+  if (htLabel) htLabel.textContent = `Resultado descanso (${scoreLabel}) `;
   document.getElementById('resFtHome').value = r.ftHome ?? '';
   document.getElementById('resFtAway').value = r.ftAway ?? '';
   document.getElementById('resHtHome').value = r.htHome ?? '';
@@ -721,7 +743,8 @@ function renderStandingsFilter() {
   sorted.forEach((g) => {
     const opt = document.createElement('option');
     opt.value = g.id;
-    opt.textContent = `${g.opponent || '?'} (${g.date || '?'})`;
+    const ha = g.venue === 'away' ? ' ✈️' : ' 🏠';
+    opt.textContent = `${g.opponent || '?'}${ha} (${g.date || '?'})`;
     sel.appendChild(opt);
   });
   sel.value = current || 'all';
@@ -850,16 +873,20 @@ function addGame() {
   const customBet = customLabel
     ? { label: customLabel, points: Number(document.getElementById('ptCustomBetPoints').value) || 0 }
     : undefined;
+  const venueEl = document.querySelector('input[name="gameVenue"]:checked');
+  const venue = (venueEl && venueEl.value === 'away') ? 'away' : 'home';
   games.push({
     id: nextGameId(),
     opponent,
     date: date || null,
+    venue,
     points: pts,
     customBet,
   });
   saveGames(games);
   document.getElementById('gameOpponent').value = '';
   document.getElementById('gameDate').value = '';
+  if (document.getElementById('gameVenueHome')) document.getElementById('gameVenueHome').checked = true;
   if (document.getElementById('ptCustomBetLabel')) document.getElementById('ptCustomBetLabel').value = '';
   if (document.getElementById('ptCustomBetPoints')) document.getElementById('ptCustomBetPoints').value = '2';
   renderGames();

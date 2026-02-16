@@ -54,6 +54,11 @@
       <div class="game-form">
         <label>Rival <input type="text" id="gameOpponent" placeholder="ej. Barcelona" /></label>
         <label>Fecha <input type="date" id="gameDate" /></label>
+        <fieldset class="points-set venue-set">
+          <legend>¿Dónde juega el Madrid?</legend>
+          <label><input type="radio" name="gameVenue" value="home" id="gameVenueHome" checked /> En casa 🏠</label>
+          <label><input type="radio" name="gameVenue" value="away" id="gameVenueAway" /> Fuera ✈️</label>
+        </fieldset>
         <fieldset class="points-set">
           <legend>Puntos si aciertas (puedes cambiarlos en cada partido)</legend>
           <label>Resultado final <input type="number" id="ptFullTime" min="0" value="3" /></label>
@@ -82,7 +87,7 @@
         <label>Partido <select id="predictionsGame"></select></label>
       </div>
       <div id="predictionsTableWrap" class="table-wrap">
-        <p class="hint">Rellena los pronósticos de cada uno. El Madrid es siempre el primer resultado (casa).</p>
+        <p class="hint" id="predictionsHint">Rellena los pronósticos. El orden del resultado depende de si el partido es en casa (RM primero) o fuera (rival primero).</p>
         <table id="predictionsTable" class="data-table">
           <thead>
             <tr id="predictionsHeaderRow">
@@ -109,8 +114,8 @@
       <div id="resultFormWrap" class="result-form-wrap">
         <fieldset>
           <legend>Resultado real</legend>
-          <label>Resultado final (RM – Rival) <input type="number" id="resFtHome" min="0" /> – <input type="number" id="resFtAway" min="0" /></label>
-          <label>Resultado descanso (RM – Rival) <input type="number" id="resHtHome" min="0" /> – <input type="number" id="resHtAway" min="0" /></label>
+          <label><span id="resFtLabel">Resultado final (RM – Rival)</span> <input type="number" id="resFtHome" min="0" /> – <input type="number" id="resFtAway" min="0" /></label>
+          <label><span id="resHtLabel">Resultado descanso (RM – Rival)</span> <input type="number" id="resHtHome" min="0" /> – <input type="number" id="resHtAway" min="0" /></label>
           <label>1.º goleador <select id="resScorer1"></select><input type="text" id="resScorer1Other" class="scorer-other-inline" placeholder="Nombre" /></label>
           <label>2.º goleador <select id="resScorer2"></select><input type="text" id="resScorer2Other" class="scorer-other-inline" placeholder="Nombre" /></label>
           <label>3.º goleador <select id="resScorer3"></select><input type="text" id="resScorer3Other" class="scorer-other-inline" placeholder="Nombre" /></label>
@@ -189,6 +194,11 @@
       <input type="hidden" id="editGameId" />
       <label>Rival <input type="text" id="editGameOpponent" placeholder="ej. Barcelona" /></label>
       <label>Fecha <input type="date" id="editGameDate" /></label>
+      <fieldset class="points-set venue-set">
+        <legend>¿Dónde juega el Madrid?</legend>
+        <label><input type="radio" name="editGameVenue" value="home" id="editGameVenueHome" /> En casa 🏠</label>
+        <label><input type="radio" name="editGameVenue" value="away" id="editGameVenueAway" /> Fuera ✈️</label>
+      </fieldset>
       <fieldset class="points-set">
         <legend>Puntos si aciertas</legend>
         <label>Resultado final <input type="number" id="editPtFullTime" min="0" /></label>

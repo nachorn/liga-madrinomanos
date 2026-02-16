@@ -407,6 +407,13 @@ button:hover {
   color: var(--text-muted);
 }
 
+.game-card .venue-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--rm-gold);
+  margin-left: 0.35rem;
+}
+
 .game-card .points-summary {
   font-size: 0.8rem;
   color: var(--text-muted);
