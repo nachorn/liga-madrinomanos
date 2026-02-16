@@ -12,6 +12,7 @@ Incluye solo estos archivos (en la raíz del proyecto):
 - `styles.css`
 - `app.js`
 - `manifest.json`
+- `logo.svg.png` (logo del Real Madrid en la cabecera)
 
 No hace falta subir las carpetas `desktop/` ni los `.md` para que funcione la app en el navegador.
 
