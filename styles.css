@@ -1,0 +1,474 @@
+/* Liga Madrinomanos – tema Real Madrid */
+
+:root {
+  /* Real Madrid: blanco, dorado, azul oscuro */
+  --rm-white: #ffffff;
+  --rm-gold: #c9a227;
+  --rm-gold-bright: #f4d03f;
+  --rm-navy: #0d2137;
+  --rm-navy-mid: #1a365d;
+  --rm-navy-light: #2c5282;
+  --bg: #0d2137;
+  --surface: #1a365d;
+  --card: #2c5282;
+  --accent: #c9a227;
+  --accent-dim: #a68520;
+  --accent-hover: #f4d03f;
+  --text: #f7fafc;
+  --text-muted: #a0aec0;
+  --border: #2c5282;
+  --green: #48bb78;
+  --header-gold: #f4d03f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  background-image: linear-gradient(180deg, var(--bg) 0%, var(--surface) 50%, var(--bg) 100%);
+}
+
+.header {
+  background: linear-gradient(135deg, var(--rm-navy-mid) 0%, var(--rm-navy) 100%);
+  padding: 1.25rem 1.5rem;
+  border-bottom: 3px solid var(--rm-gold);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--rm-white);
+  text-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
+}
+
+.header h1 .logo {
+  filter: drop-shadow(0 0 4px var(--rm-gold));
+}
+
+.subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  color: var(--rm-gold);
+  font-weight: 500;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab {
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.tab:hover {
+  background: var(--rm-navy-light);
+  border-color: var(--rm-gold);
+  color: var(--rm-gold-bright);
+}
+
+.tab.active {
+  background: var(--rm-gold);
+  border-color: var(--rm-gold);
+  color: var(--rm-navy);
+  font-weight: 600;
+}
+
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.panel {
+  display: none;
+}
+
+.panel.active {
+  display: block;
+}
+
+.panel h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.3rem;
+  color: var(--header-gold);
+  font-weight: 600;
+}
+
+.panel h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+
+.hint, .count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 0.5rem;
+}
+
+/* Participants */
+#participantsList {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+#participantsList::placeholder {
+  color: var(--text-muted);
+}
+
+button {
+  padding: 0.5rem 1rem;
+  background: var(--rm-gold);
+  color: var(--rm-navy);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  transition: background 0.2s, filter 0.2s;
+}
+
+button:hover {
+  background: var(--accent-hover);
+  filter: brightness(1.05);
+}
+
+/* Games & points */
+.game-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.game-form input[type="text"],
+.game-form input[type="date"],
+.game-form input[type="number"] {
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  width: 140px;
+}
+
+.points-set {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  max-width: 320px;
+  background: rgba(44, 82, 130, 0.3);
+}
+
+.points-set legend {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.points-set label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.points-set input {
+  width: 60px;
+  margin-left: 0.5rem;
+}
+
+.games-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.game-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.game-card:hover {
+  border-color: var(--rm-gold);
+  box-shadow: 0 0 12px rgba(201, 162, 39, 0.15);
+}
+
+.game-card .opponent {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.game-card .date {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.game-card .points-summary {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.game-card button {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.85rem;
+  background: var(--rm-navy-light);
+  color: var(--text);
+}
+
+.game-card button:hover {
+  background: var(--rm-gold);
+  color: var(--rm-navy);
+}
+
+.game-card.has-result {
+  border-left: 4px solid var(--rm-gold);
+}
+
+/* Tables */
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.data-table th,
+.data-table td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table th {
+  background: var(--surface);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--header-gold);
+}
+
+.data-table tbody tr:hover {
+  background: rgba(201, 162, 39, 0.06);
+}
+
+.data-table input[type="text"],
+.data-table input[type="number"] {
+  width: 100%;
+  min-width: 60px;
+  padding: 0.35rem 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.data-table select {
+  width: 100%;
+  min-width: 100px;
+  padding: 0.35rem 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.data-table .scorer-cell {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.data-table .scorer-cell .scorer-other-input {
+  min-width: 80px;
+  padding: 0.35rem 0.5rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.data-table input::placeholder {
+  color: var(--text-muted);
+}
+
+.data-table .score-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.data-table .score-inputs input {
+  width: 2.5rem;
+  text-align: center;
+}
+
+.pick-game {
+  margin-bottom: 1rem;
+}
+
+.pick-game select {
+  padding: 0.5rem 1rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 1rem;
+  min-width: 220px;
+}
+
+/* Result form */
+.result-form-wrap fieldset {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+  max-width: 360px;
+  background: rgba(44, 82, 130, 0.2);
+}
+
+.result-form-wrap legend {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.result-form-wrap label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.result-form-wrap input[type="number"] {
+  width: 3.5rem;
+  padding: 0.4rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  text-align: center;
+}
+
+.result-form-wrap input[type="text"] {
+  padding: 0.4rem 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  width: 160px;
+}
+
+.result-form-wrap select {
+  padding: 0.4rem 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  min-width: 180px;
+  cursor: pointer;
+}
+
+.result-form-wrap .scorer-other-inline {
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text);
+  min-width: 120px;
+}
+
+/* Standings */
+#standingsTable th:nth-child(1) { width: 2.5rem; }
+#standingsTable th:nth-child(3) { width: 5rem; }
+#standingsTable td:nth-child(3) { font-weight: 600; color: var(--green); }
+
+#standingsBody tr:nth-child(1) td {
+  background: rgba(201, 162, 39, 0.2);
+  color: var(--header-gold);
+  font-weight: 600;
+}
+
+/* Copy for WhatsApp */
+.copy-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.btn-whatsapp {
+  background: #25d366 !important;
+  color: #fff !important;
+}
+
+.btn-whatsapp:hover {
+  background: #20bd5a !important;
+  filter: brightness(1.05);
+}
+
+.copy-feedback {
+  font-size: 0.9rem;
+  color: var(--green);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.copy-feedback.visible {
+  opacity: 1;
+}
+
+.app-footer {
+  margin-top: 2rem;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  border-top: 1px solid var(--border);
+}

@@ -1,0 +1,19 @@
+{
+  "name": "Liga Madrinomanos",
+  "short_name": "Madrinomanos",
+  "description": "Pronósticos del Real Madrid – resultado final, descanso, goleadores",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0d2137",
+  "theme_color": "#c9a227",
+  "orientation": "any",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230d2137' width='100' height='100'/><text x='50' y='68' font-size='50' text-anchor='middle' fill='%23c9a227'>⚽</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

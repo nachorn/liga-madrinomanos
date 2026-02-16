@@ -1,0 +1,24 @@
+{
+  "name": "liga-madrinomanos",
+  "version": "1.0.0",
+  "description": "Liga Madrinomanos – app de escritorio (Mac/Windows)",
+  "main": "main.js",
+  "scripts": {
+    "copy-web": "node copy-web.js",
+    "start": "npm run copy-web && electron .",
+    "pack": "npm run copy-web && electron-builder --dir",
+    "dist": "npm run copy-web && electron-builder"
+  },
+  "build": {
+    "appId": "com.madrinomanos.liga",
+    "productName": "Liga Madrinomanos",
+    "directories": { "output": "dist" },
+    "files": ["main.js", "copy-web.js", "index.html", "styles.css", "app.js"],
+    "mac": { "category": "public.app-category.sports", "target": ["dmg", "zip"] },
+    "win": { "target": ["nsis", "portable"] }
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  }
+}

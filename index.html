@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#c9a227" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Madrinomanos" />
+  <title>Liga Madrinomanos</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body>
+  <header class="header">
+    <h1><span class="logo">⚽</span> Liga Madrinomanos</h1>
+    <p class="subtitle">Resultado final • Descanso • 1.º / 2.º / 3.º goleador</p>
+  </header>
+
+  <nav class="tabs">
+    <button type="button" class="tab active" data-tab="participants">Participantes</button>
+    <button type="button" class="tab" data-tab="games">Partidos y puntos</button>
+    <button type="button" class="tab" data-tab="predictions">Pronósticos</button>
+    <button type="button" class="tab" data-tab="results">Poner resultado</button>
+    <button type="button" class="tab" data-tab="standings">Clasificación</button>
+  </nav>
+
+  <main class="main">
+    <!-- PARTICIPANTS -->
+    <section id="participants" class="panel active">
+      <h2>Participantes (~30)</h2>
+      <p class="hint">Un nombre por línea. La gente del grupo de WhatsApp Madrinomanos.</p>
+      <textarea id="participantsList" rows="12" placeholder="Juan&#10;María&#10;Pedro&#10;..."></textarea>
+      <button type="button" id="saveParticipants">Guardar participantes</button>
+      <p id="participantsCount" class="count"></p>
+    </section>
+
+    <!-- GAMES & POINTS -->
+    <section id="games" class="panel">
+      <h2>Partidos y puntos (admin)</h2>
+      <div class="game-form">
+        <label>Rival <input type="text" id="gameOpponent" placeholder="ej. Barcelona" /></label>
+        <label>Fecha <input type="date" id="gameDate" /></label>
+        <fieldset class="points-set">
+          <legend>Puntos si aciertas (puedes cambiarlos en cada partido)</legend>
+          <label>Resultado final <input type="number" id="ptFullTime" min="0" value="3" /></label>
+          <label>Resultado descanso <input type="number" id="ptHalfTime" min="0" value="2" /></label>
+          <label>1.º goleador <input type="number" id="ptFirstScorer" min="0" value="2" /></label>
+          <label>2.º goleador <input type="number" id="ptSecondScorer" min="0" value="1" /></label>
+          <label>3.º goleador <input type="number" id="ptThirdScorer" min="0" value="1" /></label>
+        </fieldset>
+        <button type="button" id="addGame">Añadir partido</button>
+      </div>
+      <div class="games-list-wrap">
+        <h3>Partidos (próximos y pasados)</h3>
+        <div id="gamesList" class="games-list"></div>
+      </div>
+    </section>
+
+    <!-- PREDICTIONS -->
+    <section id="predictions" class="panel">
+      <h2>Introducir pronósticos</h2>
+      <div class="pick-game">
+        <label>Partido <select id="predictionsGame"></select></label>
+      </div>
+      <div id="predictionsTableWrap" class="table-wrap">
+        <p class="hint">Rellena los pronósticos de cada uno. El Madrid es siempre el primer resultado (casa).</p>
+        <table id="predictionsTable" class="data-table">
+          <thead>
+            <tr>
+              <th>Participante</th>
+              <th>Final (RM – Rival)</th>
+              <th>Descanso (RM – Rival)</th>
+              <th>1.º goleador</th>
+              <th>2.º goleador</th>
+              <th>3.º goleador</th>
+            </tr>
+          </thead>
+          <tbody id="predictionsBody"></tbody>
+        </table>
+        <button type="button" id="savePredictions">Guardar pronósticos</button>
+      </div>
+    </section>
+
+    <!-- ENTER RESULT -->
+    <section id="results" class="panel">
+      <h2>Poner resultado (admin)</h2>
+      <div class="pick-game">
+        <label>Partido <select id="resultsGame"></select></label>
+      </div>
+      <div id="resultFormWrap" class="result-form-wrap">
+        <fieldset>
+          <legend>Resultado real</legend>
+          <label>Resultado final (RM – Rival) <input type="number" id="resFtHome" min="0" /> – <input type="number" id="resFtAway" min="0" /></label>
+          <label>Resultado descanso (RM – Rival) <input type="number" id="resHtHome" min="0" /> – <input type="number" id="resHtAway" min="0" /></label>
+          <label>1.º goleador <select id="resScorer1"></select><input type="text" id="resScorer1Other" class="scorer-other-inline" placeholder="Nombre" /></label>
+          <label>2.º goleador <select id="resScorer2"></select><input type="text" id="resScorer2Other" class="scorer-other-inline" placeholder="Nombre" /></label>
+          <label>3.º goleador <select id="resScorer3"></select><input type="text" id="resScorer3Other" class="scorer-other-inline" placeholder="Nombre" /></label>
+        </fieldset>
+        <button type="button" id="saveResult">Guardar resultado y calcular puntos</button>
+      </div>
+    </section>
+
+    <!-- STANDINGS -->
+    <section id="standings" class="panel">
+      <h2>Clasificación</h2>
+      <div class="pick-game">
+        <label>Ver <select id="standingsFilter">
+          <option value="all">Todos los partidos</option>
+        </select></label>
+      </div>
+      <div id="standingsTableWrap" class="table-wrap">
+        <table id="standingsTable" class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Participante</th>
+              <th>Pts</th>
+              <th>Final</th>
+              <th>Desc.</th>
+              <th>1.º</th>
+              <th>2.º</th>
+              <th>3.º</th>
+            </tr>
+          </thead>
+          <tbody id="standingsBody"></tbody>
+        </table>
+        <div class="copy-actions">
+          <button type="button" id="copyStandingsWhatsApp" class="btn-whatsapp">Copiar para WhatsApp</button>
+          <span id="copyStandingsFeedback" class="copy-feedback" aria-live="polite"></span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="app-footer" aria-label="Información de datos">
+    Los datos se guardan solo en este dispositivo (no se envían a ningún servidor).
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

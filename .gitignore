@@ -1,0 +1,14 @@
+# Desktop app (Electron)
+desktop/node_modules/
+desktop/dist/
+desktop/index.html
+desktop/styles.css
+desktop/app.js
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.log
+.cursor/
