@@ -4,13 +4,13 @@
  * El admin puede ajustar los puntos en cada partido.
  */
 
-// Plantilla Real Madrid (2025-26) – desplegables de goleador
+// Plantilla Real Madrid (2025-26) – orden: delanteros, centrocampistas, defensas, porteros
 const RM_SQUAD = [
-  'Álvaro Carreras', 'Andriy Lunin', 'Antonio Rüdiger', 'Arda Güler', 'Aurélien Tchouaméni',
-  'Brahim Díaz', 'Dani Carvajal', 'Dani Ceballos', 'David Alaba', 'Dean Huijsen',
-  'Eduardo Camavinga', 'Éder Militão', 'Federico Valverde', 'Ferland Mendy', 'Fran García',
-  'Franco Mastantuono', 'Gonzalo García', 'Jude Bellingham', 'Kylian Mbappé', 'Raúl Asencio',
-  'Rodrygo', 'Thibaut Courtois', 'Trent Alexander-Arnold', 'Vinícius Júnior', 'Autogol',
+  'Kylian Mbappé', 'Vinícius Júnior', 'Rodrygo', 'Brahim Díaz', 'Gonzalo García', 'Franco Mastantuono',
+  'Jude Bellingham', 'Federico Valverde', 'Arda Güler', 'Aurélien Tchouaméni', 'Eduardo Camavinga', 'Dani Ceballos',
+  'Dani Carvajal', 'Antonio Rüdiger', 'Éder Militão', 'David Alaba', 'Trent Alexander-Arnold', 'Ferland Mendy', 'Fran García', 'Dean Huijsen', 'Raúl Asencio', 'Álvaro Carreras',
+  'Thibaut Courtois', 'Andriy Lunin',
+  'Autogol',
 ];
 
 const SCORER_OTHER = '__other__';
@@ -210,6 +210,16 @@ function scorerMatch(a, b) {
   return normalizeScorer(a) === normalizeScorer(b);
 }
 
+function isMbappe(scorerName) {
+  const n = normalizeScorer(scorerName || '');
+  return n === 'kylian mbappé' || n === 'mbappé' || n === 'mbappe';
+}
+
+function scorerPointsForSlot(actualScorer, basePoints) {
+  if (!basePoints) return 0;
+  return isMbappe(actualScorer) ? 1 : basePoints;
+}
+
 function computeGameScores(gameId, game, result, predictionsForGame) {
   if (!result || !predictionsForGame) return {};
   const pts = game.points || {};
@@ -242,15 +252,15 @@ function computeGameScores(gameId, game, result, predictionsForGame) {
       total += ht;
     }
     if (scorerMatch(pred.scorer1, r.scorer1)) {
-      s1 = pts.firstScorer || 0;
+      s1 = scorerPointsForSlot(r.scorer1, pts.firstScorer);
       total += s1;
     }
     if (scorerMatch(pred.scorer2, r.scorer2)) {
-      s2 = pts.secondScorer || 0;
+      s2 = scorerPointsForSlot(r.scorer2, pts.secondScorer);
       total += s2;
     }
     if (scorerMatch(pred.scorer3, r.scorer3)) {
-      s3 = pts.thirdScorer || 0;
+      s3 = scorerPointsForSlot(r.scorer3, pts.thirdScorer);
       total += s3;
     }
 
@@ -368,11 +378,11 @@ function openEditGameModal(game) {
   if (document.getElementById('editGameVenueHome')) document.getElementById('editGameVenueHome').checked = (venue === 'home');
   if (document.getElementById('editGameVenueAway')) document.getElementById('editGameVenueAway').checked = (venue === 'away');
   const pts = game.points || {};
-  document.getElementById('editPtFullTime').value = pts.fullTime ?? 3;
-  document.getElementById('editPtHalfTime').value = pts.halfTime ?? 2;
+  document.getElementById('editPtFullTime').value = pts.fullTime ?? 5;
+  document.getElementById('editPtHalfTime').value = pts.halfTime ?? 3;
   document.getElementById('editPtFirstScorer').value = pts.firstScorer ?? 2;
-  document.getElementById('editPtSecondScorer').value = pts.secondScorer ?? 1;
-  document.getElementById('editPtThirdScorer').value = pts.thirdScorer ?? 1;
+  document.getElementById('editPtSecondScorer').value = pts.secondScorer ?? 2;
+  document.getElementById('editPtThirdScorer').value = pts.thirdScorer ?? 2;
   document.getElementById('editPtCustomBetLabel').value = game.customBet && game.customBet.label ? game.customBet.label : '';
   document.getElementById('editPtCustomBetPoints').value = game.customBet && game.customBet.points != null ? game.customBet.points : 2;
   const modal = document.getElementById('editGameModal');
@@ -958,11 +968,11 @@ function importGames() {
 
   const games = getGames();
   const defaultPts = {
-    fullTime: Number(document.getElementById('ptFullTime')?.value) || 3,
-    halfTime: Number(document.getElementById('ptHalfTime')?.value) || 2,
+    fullTime: Number(document.getElementById('ptFullTime')?.value) || 5,
+    halfTime: Number(document.getElementById('ptHalfTime')?.value) || 3,
     firstScorer: Number(document.getElementById('ptFirstScorer')?.value) || 2,
-    secondScorer: Number(document.getElementById('ptSecondScorer')?.value) || 1,
-    thirdScorer: Number(document.getElementById('ptThirdScorer')?.value) || 1,
+    secondScorer: Number(document.getElementById('ptSecondScorer')?.value) || 2,
+    thirdScorer: Number(document.getElementById('ptThirdScorer')?.value) || 2,
   };
 
   let nextId = nextGameId();
