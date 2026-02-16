@@ -226,8 +226,12 @@ function renderGames() {
         <span class="date">${g.date || ''}</span>
       </div>
       <span class="points-summary">Final:${pts.fullTime ?? 0} Desc:${pts.halfTime ?? 0} 1.º:${pts.firstScorer ?? 0} 2.º:${pts.secondScorer ?? 0} 3.º:${pts.thirdScorer ?? 0}${customSummary}</span>
-      <button type="button" data-delete-game="${g.id}">Borrar</button>
+      <div class="game-card-actions">
+        <button type="button" data-edit-game="${g.id}">Editar</button>
+        <button type="button" data-delete-game="${g.id}">Borrar</button>
+      </div>
     `;
+    div.querySelector('[data-edit-game]').addEventListener('click', () => openEditGameModal(g));
     div.querySelector('[data-delete-game]').addEventListener('click', () => {
       if (confirm('¿Borrar este partido y sus pronósticos/resultado?')) {
         const newGames = getGames().filter((x) => x.id !== g.id);
@@ -255,6 +259,112 @@ function escapeHtml(s) {
   const div = document.createElement('div');
   div.textContent = s;
   return div.innerHTML;
+}
+
+// --- Edit game modal ---
+function openEditGameModal(game) {
+  document.getElementById('editGameId').value = game.id;
+  document.getElementById('editGameOpponent').value = game.opponent || '';
+  document.getElementById('editGameDate').value = game.date || '';
+  const pts = game.points || {};
+  document.getElementById('editPtFullTime').value = pts.fullTime ?? 3;
+  document.getElementById('editPtHalfTime').value = pts.halfTime ?? 2;
+  document.getElementById('editPtFirstScorer').value = pts.firstScorer ?? 2;
+  document.getElementById('editPtSecondScorer').value = pts.secondScorer ?? 1;
+  document.getElementById('editPtThirdScorer').value = pts.thirdScorer ?? 1;
+  document.getElementById('editPtCustomBetLabel').value = game.customBet && game.customBet.label ? game.customBet.label : '';
+  document.getElementById('editPtCustomBetPoints').value = game.customBet && game.customBet.points != null ? game.customBet.points : 2;
+  const modal = document.getElementById('editGameModal');
+  modal.classList.add('modal-open');
+  modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeEditGameModal() {
+  const modal = document.getElementById('editGameModal');
+  modal.classList.remove('modal-open');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
+function saveEditGame() {
+  const gameId = Number(document.getElementById('editGameId').value);
+  const games = getGames();
+  const game = games.find((g) => g.id === gameId);
+  if (!game) return;
+  game.opponent = document.getElementById('editGameOpponent').value.trim() || game.opponent;
+  game.date = document.getElementById('editGameDate').value || null;
+  game.points = {
+    fullTime: Number(document.getElementById('editPtFullTime').value) || 0,
+    halfTime: Number(document.getElementById('editPtHalfTime').value) || 0,
+    firstScorer: Number(document.getElementById('editPtFirstScorer').value) || 0,
+    secondScorer: Number(document.getElementById('editPtSecondScorer').value) || 0,
+    thirdScorer: Number(document.getElementById('editPtThirdScorer').value) || 0,
+  };
+  const customLabel = (document.getElementById('editPtCustomBetLabel').value || '').trim();
+  game.customBet = customLabel
+    ? { label: customLabel, points: Number(document.getElementById('editPtCustomBetPoints').value) || 0 }
+    : undefined;
+  saveGames(games);
+  recalcAllScores();
+  closeEditGameModal();
+  renderGames();
+  renderPredictionsGameSelect();
+  renderResultsGameSelect();
+  renderStandingsFilter();
+  fillPredictionsTable();
+  fillResultForm();
+  alert('Partido actualizado.');
+}
+
+// --- Export / Import ---
+function exportData() {
+  const data = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    participants: getParticipants(),
+    games: getGames(),
+    predictions: getPredictions(),
+    results: getResults(),
+    scores: getScores(),
+    historicalPoints: getHistoricalPoints(),
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `liga-madrinomanos-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function importData(file) {
+  const feedback = document.getElementById('importFeedback');
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data || typeof data !== 'object') throw new Error('Archivo no válido');
+      if (data.participants != null) saveParticipants(data.participants);
+      if (data.games != null) saveGames(data.games);
+      if (data.predictions != null) savePredictions(data.predictions);
+      if (data.results != null) saveResults(data.results);
+      if (data.scores != null) saveScores(data.scores);
+      if (data.historicalPoints != null) saveHistoricalPoints(data.historicalPoints);
+      recalcAllScores();
+      renderParticipants();
+      renderGames();
+      renderPredictionsGameSelect();
+      renderResultsGameSelect();
+      renderStandingsFilter();
+      renderHistoricalPanel();
+      renderStandings();
+      fillPredictionsTable();
+      fillResultForm();
+      if (feedback) { feedback.textContent = 'Datos importados correctamente.'; feedback.classList.add('visible'); setTimeout(() => { feedback.textContent = ''; feedback.classList.remove('visible'); }, 3000); }
+    } catch (e) {
+      if (feedback) { feedback.textContent = 'Error: ' + (e.message || 'archivo no válido'); feedback.classList.add('visible'); }
+    }
+  };
+  reader.readAsText(file);
 }
 
 // --- UI: Predictions ---
@@ -692,6 +802,20 @@ function init() {
   if (saveHistBtn) saveHistBtn.addEventListener('click', saveHistoricalFromPanel);
   const copyBtn = document.getElementById('copyStandingsWhatsApp');
   if (copyBtn) copyBtn.addEventListener('click', copyStandingsToWhatsApp);
+
+  const exportBtn = document.getElementById('exportData');
+  if (exportBtn) exportBtn.addEventListener('click', exportData);
+  const importFile = document.getElementById('importFile');
+  if (importFile) importFile.addEventListener('change', (e) => { importData(e.target.files[0]); e.target.value = ''; });
+  const importTrigger = document.getElementById('importTrigger');
+  if (importTrigger) importTrigger.addEventListener('click', () => document.getElementById('importFile').click());
+
+  const editSave = document.getElementById('editGameSave');
+  if (editSave) editSave.addEventListener('click', saveEditGame);
+  const editCancel = document.getElementById('editGameCancel');
+  if (editCancel) editCancel.addEventListener('click', closeEditGameModal);
+  const editModal = document.getElementById('editGameModal');
+  if (editModal) editModal.addEventListener('click', (e) => { if (e.target.id === 'editGameModal') closeEditGameModal(); });
 }
 
 init();

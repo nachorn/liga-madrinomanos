@@ -303,6 +303,16 @@ button:hover {
   border-left: 4px solid var(--rm-gold);
 }
 
+.game-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.game-card-actions button {
+  margin-top: 0;
+}
+
 /* Tables */
 .table-wrap {
   overflow-x: auto;
@@ -515,6 +525,131 @@ button:hover {
   color: var(--text-muted);
   text-align: center;
   border-top: 1px solid var(--border);
+}
+
+/* Data (Export / Import) */
+.data-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.data-actions .import-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.data-actions .import-label input[type="file"] {
+  position: absolute;
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.import-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  min-height: 44px;
+  line-height: 1.25;
+  background: var(--rm-navy-light);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  text-align: center;
+  transition: background 0.2s;
+}
+
+.import-btn:hover {
+  background: var(--rm-gold);
+  color: var(--rm-navy);
+}
+
+.import-feedback {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--green);
+  min-height: 1.5em;
+}
+
+.import-feedback.visible {
+  color: var(--green);
+}
+
+/* Modal: Editar partido */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s, visibility 0.2s;
+}
+
+.modal-overlay.modal-open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 400px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.modal-content h3 {
+  margin: 0 0 1rem;
+  color: var(--header-gold);
+  font-size: 1.2rem;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.modal-content input[type="text"],
+.modal-content input[type="date"],
+.modal-content input[type="number"] {
+  margin-left: 0.5rem;
+  padding: 0.5rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  width: 160px;
+}
+
+.modal-content .points-set {
+  margin: 1rem 0;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.modal-buttons button {
+  margin-top: 0;
 }
 
 /* ---------- iOS / móvil: mejor lectura y toques ---------- */

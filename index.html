@@ -25,6 +25,7 @@
     <button type="button" class="tab" data-tab="results">Poner resultado</button>
     <button type="button" class="tab" data-tab="historical">Histórico</button>
     <button type="button" class="tab" data-tab="standings">Clasificación</button>
+    <button type="button" class="tab" data-tab="data">Datos</button>
   </nav>
 
   <main class="main">
@@ -154,7 +155,49 @@
         </div>
       </div>
     </section>
+
+    <!-- DATA (Export / Import) -->
+    <section id="data" class="panel">
+      <h2>Exportar e importar datos</h2>
+      <p class="hint">Copia de seguridad de participantes, partidos, pronósticos, resultados y puntos históricos.</p>
+      <div class="data-actions">
+        <button type="button" id="exportData">Descargar copia de seguridad</button>
+        <label class="import-label">
+          <span>Importar desde archivo</span>
+          <input type="file" id="importFile" accept=".json" />
+          <span class="import-btn" id="importTrigger">Elegir archivo</span>
+        </label>
+      </div>
+      <p id="importFeedback" class="import-feedback" aria-live="polite"></p>
+    </section>
   </main>
+
+  <!-- Modal: Editar partido -->
+  <div id="editGameModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content">
+      <h3>Editar partido</h3>
+      <input type="hidden" id="editGameId" />
+      <label>Rival <input type="text" id="editGameOpponent" placeholder="ej. Barcelona" /></label>
+      <label>Fecha <input type="date" id="editGameDate" /></label>
+      <fieldset class="points-set">
+        <legend>Puntos si aciertas</legend>
+        <label>Resultado final <input type="number" id="editPtFullTime" min="0" /></label>
+        <label>Resultado descanso <input type="number" id="editPtHalfTime" min="0" /></label>
+        <label>1.º goleador <input type="number" id="editPtFirstScorer" min="0" /></label>
+        <label>2.º goleador <input type="number" id="editPtSecondScorer" min="0" /></label>
+        <label>3.º goleador <input type="number" id="editPtThirdScorer" min="0" /></label>
+      </fieldset>
+      <fieldset class="points-set custom-bet-set">
+        <legend>Apuesta extra (opcional)</legend>
+        <label>Nombre <input type="text" id="editPtCustomBetLabel" placeholder="Dejar vacío para quitar" /></label>
+        <label>Puntos <input type="number" id="editPtCustomBetPoints" min="0" /></label>
+      </fieldset>
+      <div class="modal-buttons">
+        <button type="button" id="editGameSave">Guardar</button>
+        <button type="button" id="editGameCancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
 
   <footer class="app-footer" aria-label="Información de datos">
     Los datos se guardan solo en este dispositivo (no se envían a ningún servidor).
