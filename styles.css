@@ -23,21 +23,31 @@
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
-  font-family: "Segoe UI", system-ui, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  min-height: -webkit-fill-available;
   line-height: 1.5;
   background-image: linear-gradient(180deg, var(--bg) 0%, var(--surface) 50%, var(--bg) 100%);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .header {
   background: linear-gradient(135deg, var(--rm-navy-mid) 0%, var(--rm-navy) 100%);
   padding: 1.25rem 1.5rem;
+  padding-top: calc(1.25rem + env(safe-area-inset-top));
   border-bottom: 3px solid var(--rm-gold);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
@@ -66,19 +76,30 @@ body {
   flex-wrap: wrap;
   gap: 0.35rem;
   padding: 0.75rem 1rem;
+  padding-left: calc(1rem + env(safe-area-inset-left));
+  padding-right: calc(1rem + env(safe-area-inset-right));
   background: var(--surface);
   border-bottom: 1px solid var(--border);
+  -webkit-overflow-scrolling: touch;
 }
 
 .tab {
   padding: 0.55rem 1rem;
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: 1px solid var(--border);
   background: var(--card);
   color: var(--text);
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 0.9rem;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
 }
 
 .tab:hover {
@@ -98,6 +119,8 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 1.5rem;
+  padding-left: calc(1.5rem + env(safe-area-inset-left));
+  padding-right: calc(1.5rem + env(safe-area-inset-right));
 }
 
 .panel {
@@ -146,15 +169,19 @@ body {
 
 button {
   padding: 0.5rem 1rem;
+  min-height: 44px;
   background: var(--rm-gold);
   color: var(--rm-navy);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 600;
   margin-top: 0.5rem;
   transition: background 0.2s, filter 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+  touch-action: manipulation;
 }
 
 button:hover {
@@ -280,6 +307,7 @@ button:hover {
 .table-wrap {
   overflow-x: auto;
   margin-top: 1rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table {
@@ -482,8 +510,153 @@ button:hover {
 .app-footer {
   margin-top: 2rem;
   padding: 0.75rem 1rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
   font-size: 0.8rem;
   color: var(--text-muted);
   text-align: center;
   border-top: 1px solid var(--border);
+}
+
+/* ---------- iOS / móvil: mejor lectura y toques ---------- */
+@media (max-width: 768px) {
+  body {
+    font-size: 17px;
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.9rem;
+  }
+
+  .tabs {
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    padding-left: calc(0.75rem + env(safe-area-inset-left));
+    padding-right: calc(0.75rem + env(safe-area-inset-right));
+  }
+
+  .tab {
+    padding: 0.65rem 0.85rem;
+    font-size: 0.85rem;
+    min-height: 44px;
+    border-radius: 10px;
+  }
+
+  .main {
+    padding: 1rem 0.75rem;
+    padding-left: calc(0.75rem + env(safe-area-inset-left));
+    padding-right: calc(0.75rem + env(safe-area-inset-right));
+  }
+
+  .panel h2 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .game-form input[type="text"],
+  .game-form input[type="date"],
+  .game-form input[type="number"] {
+    padding: 0.6rem 0.65rem;
+    font-size: 16px;
+    min-height: 44px;
+    border-radius: 8px;
+  }
+
+  .points-set {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .points-set input {
+    min-height: 44px;
+    padding: 0.5rem;
+    font-size: 16px;
+  }
+
+  .game-card {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .game-card button {
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.65rem 0.5rem;
+    font-size: 0.95rem;
+  }
+
+  .data-table th {
+    font-size: 0.8rem;
+  }
+
+  .data-table input[type="text"],
+  .data-table input[type="number"],
+  .data-table select {
+    min-height: 44px;
+    padding: 0.5rem 0.6rem;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+  .data-table .scorer-cell .scorer-other-input {
+    min-height: 44px;
+    padding: 0.5rem;
+    font-size: 16px;
+  }
+
+  .data-table .score-inputs input {
+    min-width: 2.8rem;
+    min-height: 44px;
+  }
+
+  .pick-game select {
+    width: 100%;
+    max-width: 100%;
+    min-height: 48px;
+    padding: 0.65rem 1rem;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+  .result-form-wrap fieldset {
+    max-width: 100%;
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  .result-form-wrap input[type="number"],
+  .result-form-wrap input[type="text"],
+  .result-form-wrap select,
+  .result-form-wrap .scorer-other-inline {
+    min-height: 44px;
+    padding: 0.55rem 0.65rem;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+
+  #participantsList {
+    min-height: 180px;
+    padding: 0.75rem;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+  .copy-actions {
+    margin-top: 1.25rem;
+    gap: 1rem;
+  }
+
+  .btn-whatsapp {
+    min-height: 48px;
+    padding: 0.65rem 1.25rem;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
 }
