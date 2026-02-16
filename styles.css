@@ -123,8 +123,12 @@ body {
   text-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
 }
 
-.header h1 .logo {
+.header h1 .header-logo {
+  height: 2.5rem;
+  width: auto;
+  vertical-align: middle;
   filter: drop-shadow(0 0 4px var(--rm-gold));
+  object-fit: contain;
 }
 
 .subtitle {
