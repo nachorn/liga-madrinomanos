@@ -13,7 +13,7 @@
     "appId": "com.madrinomanos.liga",
     "productName": "Liga Madrinomanos",
     "directories": { "output": "dist" },
-    "files": ["main.js", "copy-web.js", "index.html", "styles.css", "app.js"],
+    "files": ["main.js", "copy-web.js", "index.html", "styles.css", "app.js", "manifest.json", "service-worker.js", "icon.svg", "logo.svg.png"],
     "mac": { "category": "public.app-category.sports", "target": ["dmg", "zip"] },
     "win": { "target": ["nsis", "portable"] }
   },

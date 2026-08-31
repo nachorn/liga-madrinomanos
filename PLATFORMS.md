@@ -36,7 +36,7 @@ Sigue siendo posible mantener todo local y usar copiar/pegar.
 
 ### Opción 2: PWA (“Añadir a la pantalla de inicio”)
 
-La app incluye un **manifest** (`manifest.json`) y meta para “Añadir a la pantalla de inicio”. Si en algún momento la subes a un sitio (GitHub Pages, Netlify, tu propio servidor, etc.):
+La app incluye un **manifest**, icono y service worker para “Añadir a la pantalla de inicio” y volver a abrirla sin conexión. Si la subes a un sitio (GitHub Pages, Netlify, tu propio servidor, etc.):
 
 - En **Android:** entras con Chrome, “Añadir a la pantalla de inicio” → se abre como app, sin barra de direcciones. Sigue siendo tu misma app, localStorage en el móvil, copiar/pegar igual.
 - En **iOS:** Safari → Compartir → “Añadir a la pantalla de inicio”. Mismo comportamiento.

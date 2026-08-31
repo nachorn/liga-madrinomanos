@@ -26,7 +26,7 @@ Elige una de estas dos (gratis, sin servidor propio):
 
 1. Crea una cuenta en **GitHub** (github.com) si no tienes.
 2. Crea un repositorio nuevo (por ejemplo `liga-madrinomanos`).
-3. Sube a ese repo los archivos: `index.html`, `styles.css`, `app.js`, `manifest.json` (la carpeta del proyecto, sin `desktop/` ni `.md` si quieres).
+3. Sube a ese repo los archivos: `index.html`, `styles.css`, `app.js`, `manifest.json`, `service-worker.js`, `icon.svg` y `logo.svg.png` (la carpeta del proyecto, sin `desktop/` ni `.md` si quieres).
 4. En el repo: **Settings → Pages** → Source: “Deploy from a branch” → rama `main` → carpeta `/ (root)` → Save.
 5. En unos minutos tendrás una URL:  
    `https://tu-usuario.github.io/liga-madrinomanos/`

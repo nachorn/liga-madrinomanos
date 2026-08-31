@@ -1,6 +1,6 @@
 # Liga Madrinomanos
 
-App local para el grupo de WhatsApp **Madrinomanos**: pronósticos de **resultado final**, **resultado al descanso** y **1.º / 2.º / 3.º goleador** en cada partido del Real Madrid. Los puntos los configura el admin en cada partido.
+App local para el grupo de WhatsApp **Madrinomanos**: pronósticos de **resultado final**, **resultado al descanso** y **1.º / 2.º / 3.º goleador** en cada partido del Real Madrid. Los puntos los configura el admin en cada partido. La lista de goleadores corresponde a la plantilla oficial 2026-27.
 
 ## Cómo usar (sin instalar nada)
 
@@ -35,6 +35,7 @@ App local para el grupo de WhatsApp **Madrinomanos**: pronósticos de **resultad
 
 - **Se guardan solo en el dispositivo** donde abres la app (ordenador o móvil): en el navegador (localStorage). No se envían a ningún servidor ni hace falta cuenta.
 - En el **iPhone** (o Android), si abres la app desde una URL y la añades a la pantalla de inicio, los datos quedan **en el propio teléfono**; no dependes del ordenador. Ver **IOS-HOMESCREEN.md** y **HOSTING.md**.
+- Una vez abierta desde una URL, la app guarda sus archivos principales para poder volver a abrirla sin conexión.
 - Para hacer copia de seguridad en el PC: herramientas de desarrollador del navegador → Application → Local Storage.
 
 ## Detalles

@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const root = path.join(__dirname, '..');
-const files = ['index.html', 'styles.css', 'app.js'];
+const files = ['index.html', 'styles.css', 'app.js', 'manifest.json', 'service-worker.js', 'icon.svg', 'logo.svg.png'];
 
 files.forEach((file) => {
   const src = path.join(root, file);

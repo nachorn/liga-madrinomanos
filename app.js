@@ -4,11 +4,13 @@
  * El admin puede ajustar los puntos en cada partido.
  */
 
-// Plantilla Real Madrid (2025-26) – orden: delanteros, centrocampistas, defensas, porteros
+// Plantilla oficial Real Madrid (2026-27), publicada el 10/08/2026:
+// https://www.realmadrid.com/en-US/news/football/first-team/latest-news/dorsales-del-real-madrid-para-la-temporada-2026-27-10-08-2026
+// Orden: delanteros, centrocampistas, defensas, porteros.
 const RM_SQUAD = [
-  'Kylian Mbappé', 'Vinícius Júnior', 'Rodrygo', 'Brahim Díaz', 'Gonzalo García', 'Franco Mastantuono',
-  'Jude Bellingham', 'Federico Valverde', 'Arda Güler', 'Aurélien Tchouaméni', 'Eduardo Camavinga', 'Dani Ceballos',
-  'Dani Carvajal', 'Antonio Rüdiger', 'Éder Militão', 'David Alaba', 'Trent Alexander-Arnold', 'Ferland Mendy', 'Fran García', 'Dean Huijsen', 'Raúl Asencio', 'Álvaro Carreras',
+  'Vinícius Júnior', 'Endrick', 'Kylian Mbappé', 'Rodrygo', 'Carlos Espí', 'Brahim Díaz', 'Yan Diomande',
+  'Jude Bellingham', 'Eduardo Camavinga', 'Federico Valverde', 'Aurélien Tchouaméni', 'Arda Güler', 'Bernardo Silva', 'Thiago Pitarch',
+  'Raúl Asencio', 'Éder Militão', 'Dean Huijsen', 'Trent Alexander-Arnold', 'Ibrahima Konaté', 'Marc Cucurella', 'Álvaro Carreras', 'Antonio Rüdiger', 'Ferland Mendy', 'Denzel Dumfries',
   'Thibaut Courtois', 'Andriy Lunin',
   'Autogol',
 ];
@@ -39,7 +41,9 @@ const STORAGE_KEYS = {
   results: 'rm_results',
   scores: 'rm_scores',
   historicalPoints: 'rm_historical_points',
+  dataVersion: 'rm_data_version',
 };
+const DATA_VERSION = 2;
 const THEME_KEY = 'rm_theme';
 
 // --- Theme ---
@@ -135,24 +139,82 @@ function renderReminders() {
 }
 
 // --- Data helpers ---
+function readStoredJson(key, fallback) {
+  const raw = localStorage.getItem(key);
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw);
+  } catch (err) {
+    console.warn(`No se pudo leer ${key}; se usará un valor vacío.`, err);
+    return fallback;
+  }
+}
+
+function normalizeComparableText(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function legacyParticipantId(index) {
+  return `p-${Number(index) + 1}`;
+}
+
+function createParticipantId() {
+  if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
+    return `p-${globalThis.crypto.randomUUID()}`;
+  }
+  return `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 function getParticipants() {
-  const raw = localStorage.getItem(STORAGE_KEYS.participants);
-  if (!raw) return [];
-  return JSON.parse(raw);
+  const stored = readStoredJson(STORAGE_KEYS.participants, []);
+  if (!Array.isArray(stored)) return [];
+  return stored.map((participant, index) => {
+    if (participant && typeof participant === 'object') {
+      return {
+        id: String(participant.id || legacyParticipantId(index)),
+        name: String(participant.name || '').trim(),
+      };
+    }
+    return { id: legacyParticipantId(index), name: String(participant || '').trim() };
+  }).filter((participant) => participant.name);
 }
 
 function saveParticipants(list) {
-  const names = (list || [])
-    .map((s) => String(s).trim())
+  const existing = getParticipants();
+  const requested = (list || [])
+    .map((item) => typeof item === 'object' ? String(item.name || '').trim() : String(item || '').trim())
     .filter(Boolean);
-  localStorage.setItem(STORAGE_KEYS.participants, JSON.stringify(names));
-  return names;
+  const seenNames = new Set();
+  const names = requested.filter((name) => {
+    const normalized = normalizeComparableText(name);
+    if (seenNames.has(normalized)) return false;
+    seenNames.add(normalized);
+    return true;
+  });
+  const existingByName = new Map(existing.map((participant) => [normalizeComparableText(participant.name), participant]));
+  const exactIds = new Set(names.map((name) => existingByName.get(normalizeComparableText(name))?.id).filter(Boolean));
+  const usedIds = new Set();
+  const participants = names.map((name, index) => {
+    const exact = existingByName.get(normalizeComparableText(name));
+    let id = exact && !usedIds.has(exact.id) ? exact.id : null;
+    const samePosition = existing[index];
+    if (!id && samePosition && !exactIds.has(samePosition.id) && !usedIds.has(samePosition.id)) id = samePosition.id;
+    if (!id) id = createParticipantId();
+    usedIds.add(id);
+    return { id, name };
+  });
+  localStorage.setItem(STORAGE_KEYS.participants, JSON.stringify(participants));
+  return participants;
 }
 
 function getGames() {
-  const raw = localStorage.getItem(STORAGE_KEYS.games);
-  if (!raw) return [];
-  return JSON.parse(raw);
+  const games = readStoredJson(STORAGE_KEYS.games, []);
+  return Array.isArray(games) ? games : [];
 }
 
 function saveGames(games) {
@@ -160,9 +222,7 @@ function saveGames(games) {
 }
 
 function getPredictions() {
-  const raw = localStorage.getItem(STORAGE_KEYS.predictions);
-  if (!raw) return {};
-  return JSON.parse(raw);
+  return readStoredJson(STORAGE_KEYS.predictions, {});
 }
 
 function savePredictions(preds) {
@@ -170,9 +230,7 @@ function savePredictions(preds) {
 }
 
 function getResults() {
-  const raw = localStorage.getItem(STORAGE_KEYS.results);
-  if (!raw) return {};
-  return JSON.parse(raw);
+  return readStoredJson(STORAGE_KEYS.results, {});
 }
 
 function saveResults(results) {
@@ -180,9 +238,7 @@ function saveResults(results) {
 }
 
 function getScores() {
-  const raw = localStorage.getItem(STORAGE_KEYS.scores);
-  if (!raw) return {};
-  return JSON.parse(raw);
+  return readStoredJson(STORAGE_KEYS.scores, {});
 }
 
 function saveScores(scores) {
@@ -190,18 +246,52 @@ function saveScores(scores) {
 }
 
 function getHistoricalPoints() {
-  const raw = localStorage.getItem(STORAGE_KEYS.historicalPoints);
-  if (!raw) return {};
-  return JSON.parse(raw);
+  return readStoredJson(STORAGE_KEYS.historicalPoints, {});
 }
 
 function saveHistoricalPoints(obj) {
   localStorage.setItem(STORAGE_KEYS.historicalPoints, JSON.stringify(obj));
 }
 
+function migrateParticipantKeys(record, participants) {
+  if (!record || typeof record !== 'object' || Array.isArray(record)) return {};
+  const participantIds = new Set(participants.map((participant) => participant.id));
+  const migrated = {};
+  Object.entries(record).forEach(([gameId, entries]) => {
+    if (!entries || typeof entries !== 'object' || Array.isArray(entries)) return;
+    migrated[gameId] = {};
+    Object.entries(entries).forEach(([key, value]) => {
+      const participant = participantIds.has(key) ? { id: key } : participants[Number(key)];
+      if (participant) migrated[gameId][participant.id] = value;
+    });
+  });
+  return migrated;
+}
+
+function migrateStoredData() {
+  const storedParticipants = readStoredJson(STORAGE_KEYS.participants, []);
+  const participants = getParticipants();
+  const needsMigration = Number(localStorage.getItem(STORAGE_KEYS.dataVersion) || 1) < DATA_VERSION
+    || (Array.isArray(storedParticipants) && storedParticipants.some((participant) => typeof participant === 'string'));
+  if (!needsMigration) return;
+
+  localStorage.setItem(STORAGE_KEYS.participants, JSON.stringify(participants));
+  savePredictions(migrateParticipantKeys(getPredictions(), participants));
+  saveScores(migrateParticipantKeys(getScores(), participants));
+
+  const oldHistorical = getHistoricalPoints();
+  const historical = {};
+  participants.forEach((participant) => {
+    const oldNameKey = Object.keys(oldHistorical).find((key) => normalizeComparableText(key) === normalizeComparableText(participant.name));
+    historical[participant.id] = Number(oldHistorical[participant.id] ?? (oldNameKey ? oldHistorical[oldNameKey] : 0)) || 0;
+  });
+  saveHistoricalPoints(historical);
+  localStorage.setItem(STORAGE_KEYS.dataVersion, String(DATA_VERSION));
+}
+
 // --- Scoring ---
 function normalizeScorer(name) {
-  const n = String(name || '').trim().toLowerCase();
+  const n = normalizeComparableText(name);
   if (n === 'own goal' || n === 'autogol') return 'autogol';
   return n;
 }
@@ -212,7 +302,7 @@ function scorerMatch(a, b) {
 
 function isMbappe(scorerName) {
   const n = normalizeScorer(scorerName || '');
-  return n === 'kylian mbappé' || n === 'mbappé' || n === 'mbappe';
+  return n === 'kylian mbappe' || n === 'mbappe';
 }
 
 function scorerPointsForSlot(actualScorer, basePoints) {
@@ -251,15 +341,15 @@ function computeGameScores(gameId, game, result, predictionsForGame) {
       ht = pts.halfTime || 0;
       total += ht;
     }
-    if (scorerMatch(pred.scorer1, r.scorer1)) {
+    if (pred.scorer1 && r.scorer1 && scorerMatch(pred.scorer1, r.scorer1)) {
       s1 = scorerPointsForSlot(r.scorer1, pts.firstScorer);
       total += s1;
     }
-    if (scorerMatch(pred.scorer2, r.scorer2)) {
+    if (pred.scorer2 && r.scorer2 && scorerMatch(pred.scorer2, r.scorer2)) {
       s2 = scorerPointsForSlot(r.scorer2, pts.secondScorer);
       total += s2;
     }
-    if (scorerMatch(pred.scorer3, r.scorer3)) {
+    if (pred.scorer3 && r.scorer3 && scorerMatch(pred.scorer3, r.scorer3)) {
       s3 = scorerPointsForSlot(r.scorer3, pts.thirdScorer);
       total += s3;
     }
@@ -280,7 +370,7 @@ function recalcAllScores() {
   const games = getGames();
   const results = getResults();
   const predictions = getPredictions();
-  const allScores = getScores();
+  const allScores = {};
 
   games.forEach((g) => {
     const res = results[g.id];
@@ -297,7 +387,7 @@ function recalcAllScores() {
 // --- UI: Participants ---
 function renderParticipants() {
   const list = getParticipants();
-  document.getElementById('participantsList').value = list.join('\n');
+  document.getElementById('participantsList').value = list.map((participant) => participant.name).join('\n');
   document.getElementById('participantsCount').textContent =
     list.length ? `${list.length} participantes` : '';
 }
@@ -432,7 +522,7 @@ function saveEditGame() {
 // --- Export / Import ---
 function exportData() {
   const data = {
-    version: 1,
+    version: DATA_VERSION,
     exportedAt: new Date().toISOString(),
     participants: getParticipants(),
     games: getGames(),
@@ -457,12 +547,21 @@ function importData(file) {
     try {
       const data = JSON.parse(reader.result);
       if (!data || typeof data !== 'object') throw new Error('Archivo no válido');
-      if (data.participants != null) saveParticipants(data.participants);
-      if (data.games != null) saveGames(data.games);
-      if (data.predictions != null) savePredictions(data.predictions);
-      if (data.results != null) saveResults(data.results);
-      if (data.scores != null) saveScores(data.scores);
-      if (data.historicalPoints != null) saveHistoricalPoints(data.historicalPoints);
+      if (!Array.isArray(data.participants)) throw new Error('La copia no contiene una lista válida de participantes');
+      if (!Array.isArray(data.games)) throw new Error('La copia no contiene una lista válida de partidos');
+      ['predictions', 'results', 'scores', 'historicalPoints'].forEach((key) => {
+        if (data[key] != null && (typeof data[key] !== 'object' || Array.isArray(data[key]))) {
+          throw new Error(`El campo ${key} no es válido`);
+        }
+      });
+      localStorage.setItem(STORAGE_KEYS.participants, JSON.stringify(data.participants));
+      saveGames(data.games);
+      savePredictions(data.predictions || {});
+      saveResults(data.results || {});
+      saveScores(data.scores || {});
+      saveHistoricalPoints(data.historicalPoints || {});
+      localStorage.setItem(STORAGE_KEYS.dataVersion, String(Number(data.version) || 1));
+      migrateStoredData();
       recalcAllScores();
       renderParticipants();
       renderGames();
@@ -494,7 +593,7 @@ function renderPredictionsGameSelect() {
     opt.textContent = `${g.opponent || '?'}${ha} (${g.date || '?'})`;
     sel.appendChild(opt);
   });
-  sel.addEventListener('change', fillPredictionsTable);
+  sel.onchange = fillPredictionsTable;
 }
 
 function fillPredictionsTable() {
@@ -525,11 +624,11 @@ function fillPredictionsTable() {
   if (hasCustomBet) headerHtml += `<th>${escapeHtml(game.customBet.label)}</th>`;
   if (headerRow) headerRow.innerHTML = headerHtml;
 
-  participants.forEach((name, idx) => {
-    const p = gamePreds[idx] || {};
+  participants.forEach((participant) => {
+    const p = gamePreds[participant.id] || {};
     const tr = document.createElement('tr');
     let rowHtml = `
-      <td>${escapeHtml(name)}</td>
+      <td>${escapeHtml(participant.name)}</td>
       <td><div class="score-inputs"><input type="number" data-ft-home min="0" value="${p.ftHome ?? ''}" placeholder="${firstPh}" /><span>–</span><input type="number" data-ft-away min="0" value="${p.ftAway ?? ''}" placeholder="${secondPh}" /></div></td>
       <td><div class="score-inputs"><input type="number" data-ht-home min="0" value="${p.htHome ?? ''}" placeholder="${firstPh}" /><span>–</span><input type="number" data-ht-away min="0" value="${p.htAway ?? ''}" placeholder="${secondPh}" /></div></td>
       <td><span class="scorer-cell"><select data-scorer1>${buildScorerSelectOptions(p.scorer1)}</select><input type="text" class="scorer-other-input" data-scorer-other="1" placeholder="Nombre" /></span></td>
@@ -538,7 +637,7 @@ function fillPredictionsTable() {
     `;
     if (hasCustomBet) rowHtml += `<td><input type="text" data-custom-bet value="${escapeHtml(p.customBetValue || '')}" placeholder="Pronóstico" /></td>`;
     tr.innerHTML = rowHtml;
-    tr.dataset.participantIndex = idx;
+    tr.dataset.participantId = participant.id;
     [1, 2, 3].forEach((n) => {
       const sel = tr.querySelector(`select[data-scorer${n}]`);
       const inp = tr.querySelector(`.scorer-other-input[data-scorer-other="${n}"]`);
@@ -571,7 +670,7 @@ function savePredictionsFromTable() {
   const predictions = getPredictions();
   predictions[gameId] = {};
   document.querySelectorAll('#predictionsBody tr').forEach((tr) => {
-    const idx = tr.dataset.participantIndex;
+    const participantId = tr.dataset.participantId;
     const inputs = tr.querySelectorAll('input[data-ft-home], input[data-ft-away], input[data-ht-home], input[data-ht-away]');
     const ftHome = inputs[0], ftAway = inputs[1], htHome = inputs[2], htAway = inputs[3];
     function getScorerValue(n) {
@@ -583,7 +682,7 @@ function savePredictionsFromTable() {
     }
     const customInp = tr.querySelector('input[data-custom-bet]');
     const customBetValue = hasCustomBet && customInp ? (customInp.value || '').trim() || undefined : undefined;
-    predictions[gameId][idx] = {
+    predictions[gameId][participantId] = {
       ftHome: ftHome.value.trim() === '' ? undefined : Number(ftHome.value),
       ftAway: ftAway.value.trim() === '' ? undefined : Number(ftAway.value),
       htHome: htHome.value.trim() === '' ? undefined : Number(htHome.value),
@@ -613,7 +712,7 @@ function renderResultsGameSelect() {
     opt.textContent = `${g.opponent || '?'}${ha} (${g.date || '?'})`;
     sel.appendChild(opt);
   });
-  sel.addEventListener('change', fillResultForm);
+  sel.onchange = fillResultForm;
 }
 
 function initResultScorerSelects() {
@@ -690,11 +789,32 @@ function saveResultFromForm() {
   }
   const customValueEl = document.getElementById('resCustomBetValue');
   const customBetValue = (game && game.customBet && customValueEl) ? customValueEl.value.trim() : '';
+  const scoreFields = [
+    ['resFtHome', 'primer valor del resultado final'],
+    ['resFtAway', 'segundo valor del resultado final'],
+    ['resHtHome', 'primer valor del descanso'],
+    ['resHtAway', 'segundo valor del descanso'],
+  ];
+  const scoreValues = {};
+  for (const [id, label] of scoreFields) {
+    const raw = document.getElementById(id).value.trim();
+    const value = Number(raw);
+    if (raw === '' || !Number.isInteger(value) || value < 0) {
+      alert(`Introduce un número entero válido para el ${label}.`);
+      document.getElementById(id).focus();
+      return;
+    }
+    scoreValues[id] = value;
+  }
+  if (scoreValues.resHtHome > scoreValues.resFtHome || scoreValues.resHtAway > scoreValues.resFtAway) {
+    alert('El resultado al descanso no puede superar el resultado final.');
+    return;
+  }
   results[gameId] = {
-    ftHome: Number(document.getElementById('resFtHome').value) || 0,
-    ftAway: Number(document.getElementById('resFtAway').value) || 0,
-    htHome: Number(document.getElementById('resHtHome').value) || 0,
-    htAway: Number(document.getElementById('resHtAway').value) || 0,
+    ftHome: scoreValues.resFtHome,
+    ftAway: scoreValues.resFtAway,
+    htHome: scoreValues.resHtHome,
+    htAway: scoreValues.resHtAway,
     scorer1: getResultScorer(1),
     scorer2: getResultScorer(2),
     scorer3: getResultScorer(3),
@@ -714,12 +834,12 @@ function renderHistoricalPanel() {
   const tbody = document.getElementById('historicalBody');
   if (!tbody) return;
   tbody.innerHTML = '';
-  participants.forEach((name, idx) => {
+  participants.forEach((participant) => {
     const tr = document.createElement('tr');
-    const val = historical[name];
-    tr.dataset.participantIndex = idx;
+    const val = historical[participant.id];
+    tr.dataset.participantId = participant.id;
     tr.innerHTML = `
-      <td>${escapeHtml(name)}</td>
+      <td>${escapeHtml(participant.name)}</td>
       <td><input type="number" min="0" value="${val !== undefined && val !== null ? Number(val) : ''}" placeholder="0" /></td>
     `;
     tbody.appendChild(tr);
@@ -730,12 +850,12 @@ function saveHistoricalFromPanel() {
   const participants = getParticipants();
   const historical = getHistoricalPoints();
   document.querySelectorAll('#historicalBody tr').forEach((tr) => {
-    const idx = tr.dataset.participantIndex;
-    const name = participants[Number(idx)];
+    const participantId = tr.dataset.participantId;
+    const participant = participants.find((item) => item.id === participantId);
     const input = tr.querySelector('input[type="number"]');
-    if (name != null && input) {
+    if (participant && input) {
       const v = input.value.trim();
-      historical[name] = v === '' ? 0 : Number(v);
+      historical[participant.id] = v === '' ? 0 : Number(v);
     }
   });
   saveHistoricalPoints(historical);
@@ -758,7 +878,7 @@ function renderStandingsFilter() {
     sel.appendChild(opt);
   });
   sel.value = current || 'all';
-  sel.addEventListener('change', renderStandings);
+  sel.onchange = renderStandings;
 }
 
 function renderStandings() {
@@ -770,26 +890,28 @@ function renderStandings() {
 
   const gameIds = filter === 'all' ? games.map((g) => g.id) : [filter];
 
-  const totals = participants.map((_, idx) => {
+  const totals = participants.map((participant) => {
     let gamePoints = 0;
     gameIds.forEach((gid) => {
       const gameScores = scores[gid];
-      if (gameScores && gameScores[idx]) gamePoints += gameScores[idx].total;
+      if (gameScores && gameScores[participant.id]) gamePoints += gameScores[participant.id].total;
     });
-    const name = participants[idx];
-    const hist = Number(historical[name]) || 0;
+    const hist = filter === 'all' ? Number(historical[participant.id]) || 0 : 0;
     const total = hist + gamePoints;
-    return { idx, name, total, gamePoints, historical: hist };
+    return { id: participant.id, name: participant.name, total, gamePoints, historical: hist };
   });
 
   totals.sort((a, b) => b.total - a.total);
+  totals.forEach((total, index) => {
+    total.rank = index > 0 && totals[index - 1].total === total.total ? totals[index - 1].rank : index + 1;
+  });
 
   const tbody = document.getElementById('standingsBody');
   tbody.innerHTML = '';
-  totals.forEach((t, rank) => {
+  totals.forEach((t) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${rank + 1}</td>
+      <td>${t.rank}</td>
       <td>${escapeHtml(t.name)}</td>
       <td>${t.total}</td>
     `;
@@ -813,20 +935,15 @@ function getLatestMatchWinnersAsText() {
   const gameScores = scores[latest.id];
   if (!gameScores) return '';
 
-  const byPoints = {};
-  participants.forEach((name, idx) => {
-    const s = gameScores[idx];
+  const participantPoints = participants.map((participant) => {
+    const s = gameScores[participant.id];
     const pts = s && typeof s.total === 'number' ? s.total : 0;
-    if (!byPoints[pts]) byPoints[pts] = [];
-    byPoints[pts].push(name);
+    return { name: participant.name, points: pts };
   });
-
-  const ptsOrder = Object.keys(byPoints).map(Number).sort((a, b) => b - a);
-  const lines = [`🏆 Último partido (${latest.opponent || '?'} ${latest.date || ''}):`];
-  ptsOrder.forEach((pts) => {
-    lines.push(`${pts} pts — ${byPoints[pts].join(', ')}`);
-  });
-  return lines.join('\n');
+  if (!participantPoints.length) return '';
+  const winningPoints = Math.max(...participantPoints.map((entry) => entry.points));
+  const winners = participantPoints.filter((entry) => entry.points === winningPoints).map((entry) => entry.name);
+  return `🏆 Último partido (${latest.opponent || '?'} ${latest.date || ''}):\n${winners.join(', ')} — ${winningPoints} pts`;
 }
 
 function getStandingsAsWhatsAppText() {
@@ -844,9 +961,9 @@ function getStandingsAsWhatsAppText() {
     '',
   ];
 
-  totals.forEach((t, i) => {
-    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '  ';
-    const rank = (i + 1).toString().padStart(2);
+  totals.forEach((t) => {
+    const medal = t.rank === 1 ? '🥇' : t.rank === 2 ? '🥈' : t.rank === 3 ? '🥉' : '  ';
+    const rank = t.rank.toString().padStart(2);
     lines.push(`${medal} ${rank}. ${t.name} — ${t.total} pts`);
   });
 
@@ -1027,16 +1144,20 @@ function importGames() {
 // --- Save participants ---
 function onSaveParticipants() {
   const text = document.getElementById('participantsList').value;
-  const list = text.split(/\n/).map((s) => s.trim()).filter(Boolean);
-  saveParticipants(list);
+  const requested = text.split(/\n/).map((s) => s.trim()).filter(Boolean);
+  const list = saveParticipants(requested);
   renderParticipants();
   fillPredictionsTable();
+  renderHistoricalPanel();
   renderStandings();
-  alert(`${list.length} participantes guardados.`);
+  const duplicatesRemoved = requested.length - list.length;
+  alert(`${list.length} participantes guardados.${duplicatesRemoved ? ` Se ignoraron ${duplicatesRemoved} nombre(s) duplicado(s).` : ''}`);
 }
 
 // --- Init ---
 function init() {
+  migrateStoredData();
+  recalcAllScores();
   const theme = getTheme();
   document.body.setAttribute('data-theme', theme);
   const themeBtn = document.getElementById('themeToggle');
@@ -1082,6 +1203,12 @@ function init() {
   if (editCancel) editCancel.addEventListener('click', closeEditGameModal);
   const editModal = document.getElementById('editGameModal');
   if (editModal) editModal.addEventListener('click', (e) => { if (e.target.id === 'editGameModal') closeEditGameModal(); });
+
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register('./service-worker.js').catch((err) => {
+      console.warn('No se pudo activar el modo sin conexión.', err);
+    });
+  }
 }
 
 init();

@@ -12,6 +12,8 @@ Incluye solo estos archivos (en la raíz del proyecto):
 - `styles.css`
 - `app.js`
 - `manifest.json`
+- `service-worker.js`
+- `icon.svg`
 - `logo.svg.png` (logo del Real Madrid en la cabecera)
 
 No hace falta subir las carpetas `desktop/` ni los `.md` para que funcione la app en el navegador.
@@ -32,7 +34,7 @@ Opcional: en Netlify (si creas cuenta) puedes cambiar el nombre del sitio para u
 ## GitHub Pages
 
 1. Crea un repositorio en GitHub (ej. `liga-madrinomanos`).
-2. Sube `index.html`, `styles.css`, `app.js` y `manifest.json` a la **raíz** del repo (o en una carpeta; la URL cambiará).
+2. Sube `index.html`, `styles.css`, `app.js`, `manifest.json`, `service-worker.js`, `icon.svg` y `logo.svg.png` a la **raíz** del repo (o en una carpeta; la URL cambiará).
 3. En el repo: **Settings → Pages** → Source: “Deploy from a branch” → rama `main` (o `master`) → carpeta “/ (root)” → Save.
 4. La URL será `https://tu-usuario.github.io/liga-madrinomanos/` (o con la carpeta que hayas usado).
 5. En el móvil: abre esa URL → Añadir a la pantalla de inicio.
@@ -59,7 +61,7 @@ En la carpeta del proyecto (en la terminal):
 
 ```bash
 git init
-git add index.html styles.css app.js manifest.json
+git add index.html styles.css app.js manifest.json service-worker.js icon.svg logo.svg.png
 git add README.md HOSTING.md IOS-HOMESCREEN.md PLATFORMS.md
 git add desktop/
 git commit -m "Liga Madrinomanos – primera versión"
@@ -95,7 +97,7 @@ git push -u origin main
 6. Netlify te dará una URL (ej. `https://liga-madrinomanos.netlify.app`).  
 7. A partir de ahora, cada **push** a la rama que hayas elegido (p. ej. `main`) hará que Netlify vuelva a desplegar y la web se actualice sola.
 
-**Para "Cargar partidos desde la web":** Si usas **GitHub Pages**: entra en la app → Importar partidos → pega tu API key de [football-data.org](https://www.football-data.org/client/register) (gratis) y pulsa "Guardar key". Si usas **Netlify**: puedes poner la key en **Site configuration → Environment variables** (`FOOTBALL_DATA_API_KEY`) y la función en `netlify/functions/` la usará; así los usuarios no la ven.
+Los partidos se introducen manualmente o mediante la importación de texto de la propia app. La aplicación no necesita API keys ni envía los datos de la liga a un servidor.
 
 ### Resumen
 

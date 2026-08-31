@@ -71,7 +71,7 @@ Copia y pega **cada bloque** en la terminal y pulsa Enter después de cada uno. 
 **5.1 – Inicializar el repo y añadir archivos**
 ```bash
 git init
-git add index.html styles.css app.js manifest.json
+git add index.html styles.css app.js manifest.json service-worker.js icon.svg logo.svg.png
 git add README.md HOSTING.md IOS-HOMESCREEN.md PLATFORMS.md PASO-A-PASO.md
 git add desktop/
 git add .gitignore
@@ -120,7 +120,7 @@ Cada vez que edites archivos (en Cursor o donde sea) y quieras que la web se act
    ```
 2. Ejecuta:
    ```bash
-   git add index.html styles.css app.js
+   git add index.html styles.css app.js manifest.json service-worker.js icon.svg logo.svg.png
    ```
    (o `git add .` si cambiaste más archivos)
 3. Luego:
